@@ -23,15 +23,7 @@ import {
 
 const Sidebar = ({ userRole }) => {
   const applicantItems = [
-    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/dashboard' },
-    { label: 'Apply For Fresh Application', icon: <FilePlus size={18} />, path: '/apply' },
-    { label: 'Self Compliance', icon: <CheckSquare size={18} />, path: '/compliance' },
-    { label: 'Self Inspection', icon: <ClipboardCheck size={18} />, path: '/inspection' },
-    { label: 'Apply For Renewal Application', icon: <RefreshCw size={18} />, path: '/renewal' },
-    { label: 'EAC', icon: <BookOpen size={18} />, path: '/eac' },
-    { label: 'Application Passbook', icon: <FileText size={18} />, path: '/passbook' },
-    { label: 'Fee Payments', icon: <CreditCard size={18} />, path: '/payment' },
-    { label: 'My Reports', icon: <BarChart2 size={18} />, path: '/reports' },
+    { label: 'Authority Hub', icon: <LayoutDashboard size={18} />, path: '/dashboard' },
   ];
 
   const vendorItems = [

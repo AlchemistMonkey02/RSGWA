@@ -8,7 +8,11 @@ import {
   Activity, Calendar, CheckCircle2, XCircle, Clock
 } from 'lucide-react';
 
-const Reports = () => {
+import { useNavigate } from 'react-router-dom';
+import { Building2, RefreshCw } from 'lucide-react';
+
+const Reports = ({ activeCompany, setActiveCompany }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [daterange, setDaterange] = useState('6m');
 
@@ -49,7 +53,19 @@ const Reports = () => {
   );
 
   return (
-    <div className="reports-page">
+    <div className="reports-page animated">
+      {activeCompany && (
+        <div className="active-context-bar animated">
+          <div className="ac-left">
+            <Building2 size={16} />
+            <span>Acting as: <strong>{activeCompany.name}</strong></span>
+            <span className="ac-id">{activeCompany.id}</span>
+          </div>
+          <button className="ac-switch" onClick={() => { setActiveCompany(null); navigate('/dashboard'); }}>
+            <RefreshCw size={14} /> Switch Entity
+          </button>
+        </div>
+      )}
       <div className="page-header">
         <div className="ph-left">
           <h1>Analytics & Reports</h1>
@@ -179,6 +195,25 @@ const Reports = () => {
 
       <style jsx>{`
                 .reports-page { padding: 30px; background: #f8fafc; min-height: 100vh; font-family: 'Inter', sans-serif; }
+
+                .active-context-bar {
+                    background: #f1f5f9;
+                    border-bottom: 1px solid #e2e8f0;
+                    padding: 8px 30px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 0.8rem;
+                    margin: -30px -30px 30px -30px;
+                }
+                .ac-left { display: flex; align-items: center; gap: 12px; color: #475569; }
+                .ac-left strong { color: #0f172a; }
+                .ac-id { font-size: 0.7rem; color: #94a3b8; font-weight: 700; background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; }
+                .ac-switch { background: #0f172a; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+                .ac-switch:hover { background: #1e293b; transform: translateY(-1px); }
+
+                .animated { animation: fadeIn 0.5s ease-out; }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
                 
                 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
                 .ph-left h1 { margin: 0; font-size: 1.8rem; color: #1e293b; font-weight: 800; }

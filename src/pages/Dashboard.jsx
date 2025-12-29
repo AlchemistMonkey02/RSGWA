@@ -1,641 +1,429 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
-import { TrendingUp, Clock, Activity, FileText, Filter, Calendar, Layers } from 'lucide-react';
+  FileText, Droplets, ArrowRight, ArrowLeft, Activity, AlertTriangle,
+  FileCheck, ShieldCheck, Ruler, Truck, Wallet, BarChart3,
+  Clock, Bell, Settings, ChevronRight, CheckCircle2,
+  XCircle, Info, Calculator, Globe, Plus, X, Building2, Shield
+} from 'lucide-react';
 
-// Mock Application Database
-const ALL_APPLICATIONS = [
-  { id: 1, code: 'RJ-2025-APP-001', project: 'Saket Hospital Expansion', type: 'Infrastructure', quantum: 15.5, month: 'December', year: '2025', status: 'Draft' },
-  { id: 2, code: 'RJ-2025-APP-002', project: 'Steel Manufacturing Plant', type: 'Industrial', quantum: 45.2, month: 'December', year: '2025', status: 'Submitted' },
-  { id: 3, code: 'RJ-2025-APP-003', project: 'Mining Operations - Jaipur', type: 'Mining', quantum: 32.8, month: 'December', year: '2025', status: 'Draft' },
-  { id: 4, code: 'RJ-2025-APP-004', project: 'Residential Complex', type: 'Domestic', quantum: 8.5, month: 'December', year: '2025', status: 'Approved' },
-  { id: 5, code: 'RJ-2025-APP-005', project: 'Highway Construction', type: 'Infrastructure', quantum: 28.0, month: 'November', year: '2025', status: 'Submitted' },
-  { id: 6, code: 'RJ-2025-APP-006', project: 'Textile Factory', type: 'Industrial', quantum: 52.3, month: 'November', year: '2025', status: 'Draft' },
-  { id: 7, code: 'RJ-2025-APP-007', project: 'Marble Quarry', type: 'Mining', quantum: 18.7, month: 'November', year: '2025', status: 'Approved' },
-  { id: 8, code: 'RJ-2025-APP-008', project: 'Shopping Mall', type: 'Infrastructure', quantum: 22.4, month: 'October', year: '2025', status: 'Draft' },
-  { id: 9, code: 'RJ-2025-APP-009', project: 'Chemical Plant', type: 'Industrial', quantum: 67.9, month: 'October', year: '2025', status: 'Submitted' },
-  { id: 10, code: 'RJ-2025-APP-010', project: 'Apartment Building', type: 'Domestic', quantum: 12.3, month: 'October', year: '2025', status: 'Approved' },
-  { id: 11, code: 'RJ-2024-APP-011', project: 'Metro Station', type: 'Infrastructure', quantum: 38.5, month: 'December', year: '2024', status: 'Approved' },
-  { id: 12, code: 'RJ-2024-APP-012', project: 'Cement Factory', type: 'Industrial', quantum: 55.0, month: 'November', year: '2024', status: 'Approved' },
-  { id: 13, code: 'RJ-2025-APP-013', project: 'Hotel Development', type: 'Infrastructure', quantum: 19.8, month: 'December', year: '2025', status: 'Draft' },
-  { id: 14, code: 'RJ-2025-APP-014', project: 'Pharmaceutical Unit', type: 'Industrial', quantum: 41.2, month: 'December', year: '2025', status: 'Submitted' },
-  { id: 15, code: 'RJ-2025-APP-015', project: 'Stone Mining', type: 'Mining', quantum: 25.6, month: 'December', year: '2025', status: 'Draft' },
-];
-
-const Dashboard = () => {
+const Dashboard = ({ activeCompany, setActiveCompany, userCompanies, setUserCompanies }) => {
   const navigate = useNavigate();
 
-  // Filter States
-  const [selectedMonth, setSelectedMonth] = useState('December');
-  const [selectedYear, setSelectedYear] = useState('2025');
-  const [selectedType, setSelectedType] = useState('All');
-  const [selectedStatus, setSelectedStatus] = useState('All');
+  // Multi-Entity Mock Data
+  // Multi-Entity state now managed at App level
 
-  // Filter applications based on selected criteria
-  const filteredApplications = useMemo(() => {
-    return ALL_APPLICATIONS.filter(app => {
-      const monthMatch = app.month === selectedMonth;
-      const yearMatch = app.year === selectedYear;
-      const typeMatch = selectedType === 'All' || app.type === selectedType;
-      const statusMatch = selectedStatus === 'All' || app.status === selectedStatus;
-
-      return monthMatch && yearMatch && typeMatch && statusMatch;
-    });
-  }, [selectedMonth, selectedYear, selectedType, selectedStatus]);
-
-  // Calculate stats based on filtered data
-  const getStats = () => {
-    const drafts = filteredApplications.filter(app => app.status === 'Draft').length;
-    const submitted = filteredApplications.filter(app => app.status === 'Submitted').length;
-    const approved = filteredApplications.filter(app => app.status === 'Approved').length;
-    const pending = filteredApplications.filter(app => app.status === 'Pending Action').length;
-
-    return [
-      { label: 'Drafts', value: drafts, color: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', icon: <FileText size={24} /> },
-      { label: 'Submitted', value: submitted, color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', icon: <Activity size={24} /> },
-      { label: 'Pending Action', value: pending, color: 'linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%)', icon: <Clock size={24} /> },
-      { label: 'Completed', value: approved, color: 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)', icon: <TrendingUp size={24} /> },
-    ];
-  };
-
-  // Calculate category breakdown
-  const getCategoryData = () => {
-    const categories = ['Industrial', 'Infrastructure', 'Mining', 'Domestic'];
-    return categories.map(cat => ({
-      name: cat,
-      value: filteredApplications.filter(app => app.type === cat).length
-    })).filter(item => item.value > 0);
-  };
-
-  const weeklyTrendData = [
-    { name: 'Mon', apps: Math.floor(Math.random() * 10) + 1 },
-    { name: 'Tue', apps: Math.floor(Math.random() * 10) + 1 },
-    { name: 'Wed', apps: Math.floor(Math.random() * 10) + 1 },
-    { name: 'Thu', apps: Math.floor(Math.random() * 10) + 1 },
-    { name: 'Fri', apps: Math.floor(Math.random() * 10) + 1 },
-    { name: 'Sat', apps: Math.floor(Math.random() * 5) + 1 },
-    { name: 'Sun', apps: Math.floor(Math.random() * 5) + 1 },
+  const serviceDefinitions = [
+    { id: 'noc', title: "Groundwater NOC Services", icon: <FileText size={20} />, color: "#3b82f6" },
+    { id: 'meters', title: "Water Flow Meter Registration", icon: <Droplets size={20} />, color: "#10b981" },
+    { id: 'rigs', title: "Rig Registration", icon: <Truck size={20} />, color: "#f59e0b" },
+    { id: 'modeling', title: "Ground Water Modeling", icon: <Globe size={20} />, color: "#7c3aed" },
+    { id: 'monitoring', title: "Ground Water Level Monitoring", icon: <Activity size={20} />, color: "#ef4444" }
   ];
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  const [vaultDocs, setVaultDocs] = useState([
+    { id: 1, name: "Group PAN Card.pdf", type: "KYC", size: "1.2 MB", date: "2024-11-20" },
+    { id: 2, name: "Industrial Lease Agreement.pdf", type: "Legal", size: "3.5 MB", date: "2024-12-05" }
+  ]);
 
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'Draft': return 'badge-warning';
-      case 'Submitted': return 'badge-info';
-      case 'Approved': return 'badge-success';
-      default: return 'badge-secondary';
-    }
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedComp, setSelectedComp] = useState(null);
+  const [applyModal, setApplyModal] = useState({ show: false, comp: null, service: null });
+  const [registerModal, setRegisterModal] = useState(false);
+  const [newCompName, setNewCompName] = useState("");
+  const [newCompZone, setNewCompZone] = useState("Jaipur (Industrial)");
+
+  const handleApply = (compId, serviceId) => {
+    const comp = userCompanies.find(c => c.id === compId);
+    setApplyModal({ show: true, comp, service: serviceDefinitions.find(s => s.id === serviceId) });
+  };
+
+  const finalizeApplication = () => {
+    const { comp, service } = applyModal;
+    setActiveCompany(comp);
+    setApplyModal({ show: false, comp: null, service: null });
+
+    const route = comp.services[service.id].route;
+    navigate(route);
   };
 
   return (
-    <div className="dashboard-container">
-      {/* Alert Section */}
-      <div className="alert-section">
-        <p className="alert-text">
-          <strong>RAJASTHAN GROUND WATER AUTHORITY (RGWA)</strong>: The Issue Reporting Module is now live. Please report issues exclusively through the Issue Reporting Module.
-        </p>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="filter-bar">
-        <div className="filter-header">
-          <Filter size={18} />
-          <span>Filters</span>
+    <div className="discovery-hub animated">
+      <div className="hub-header-v3">
+        <div className="hh-left">
+          <h1>Corporate Management Hub</h1>
+          <p>Central Command & Authority Service Portal</p>
         </div>
-        <div className="filter-item">
-          <Calendar size={16} className="text-secondary" />
-          <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
-            {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
-              <option key={m} value={m}>{m}</option>
+
+        <div className="header-context-switcher">
+          <div className="ac-label">
+            <Building2 size={16} />
+            <span>Acting as:</span>
+          </div>
+          <select
+            value={activeCompany?.id || ""}
+            onChange={(e) => setActiveCompany(userCompanies.find(c => c.id === e.target.value))}
+            className="company-dropdown"
+          >
+            {!activeCompany && <option value="">Select Business Entity...</option>}
+            {userCompanies.map(c => (
+              <option key={c.id} value={c.id}>{c.name} ({c.id})</option>
             ))}
           </select>
-        </div>
-        <div className="filter-item">
-          <span className="text-secondary font-bold">YR</span>
-          <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-          </select>
-        </div>
-        <div className="filter-item">
-          <Layers size={16} className="text-secondary" />
-          <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
-            <option value="All">All Application Types</option>
-            <option value="Industrial">Industrial</option>
-            <option value="Infrastructure">Infrastructure</option>
-            <option value="Mining">Mining</option>
-            <option value="Domestic">Domestic</option>
-          </select>
-        </div>
-        <div className="filter-item">
-          <Activity size={16} className="text-secondary" />
-          <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
-            <option value="All">All Statuses</option>
-            <option value="Draft">Draft</option>
-            <option value="Submitted">Submitted</option>
-            <option value="Approved">Approved</option>
-          </select>
-        </div>
-        <div className="filter-summary">
-          <span className="filter-count">{filteredApplications.length} Applications Found</span>
+          <button className="btn-add-entity-sm" onClick={() => setRegisterModal(true)}><Plus size={16} /></button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
-        {getStats().map((stat, index) => {
-          const statusMap = {
-            'Drafts': 'draft',
-            'Submitted': 'submitted',
-            'Pending Action': 'pending',
-            'Completed': 'completed'
-          };
-          const statusRoute = statusMap[stat.label];
-
-          return (
-            <div
-              key={index}
-              className="stat-card clickable"
-              style={{ background: stat.color }}
-              onClick={() => navigate(`/applications/${statusRoute}?month=${selectedMonth}&year=${selectedYear}&type=${selectedType}`)}
-            >
-              <div className="stat-content">
-                <div>
-                  <h3>{stat.label}</h3>
-                  <span className="stat-value">{stat.value}</span>
+      <div className="hub-layout-v3">
+        <aside className="hub-side-v3">
+          <div className="portfolio-summary card-v3">
+            <h3><Info size={18} /> Entity Status</h3>
+            {activeCompany ? (
+              <>
+                <div className="stat-row">
+                  <div className="s-item"><label>Active Services</label><strong>2/5</strong></div>
+                  <div className="s-item"><label>Compliance</label><strong className="text-green">94%</strong></div>
                 </div>
-                <div className="stat-icon">{stat.icon}</div>
-              </div>
-              <div className="stat-footer">
-                <span>Verified for {selectedMonth} {selectedYear}</span>
-              </div>
+                <div className="progress-mini">
+                  <div className="pm-fill" style={{ width: '94%' }}></div>
+                </div>
+                <p className="p-desc"><strong>{activeCompany.name}</strong> is fully compliant with all current RGWA protocols.</p>
+              </>
+            ) : (
+              <p className="no-context-txt">Please select an entity from the header to view specific compliance stats.</p>
+            )}
+          </div>
+
+          <div className="vault-box-v3 card-v3">
+            <div className="v-header">
+              <h3><Shield size={18} /> Corporate Vault</h3>
+              <button className="v-add"><Plus size={14} /></button>
             </div>
-          );
-        })}
+            <div className="v-list">
+              {vaultDocs.map(doc => (
+                <div key={doc.id} className="v-item">
+                  <FileText size={16} />
+                  <span>{doc.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        <main className="entity-selection-main">
+          <div className="company-card-v3 main-panel">
+            <div className="cc-services-label">
+              {activeCompany ? `Available Services for ${activeCompany.name}` : "Select an Entity to Manage Services"}
+            </div>
+
+            <div className="cc-services-grid">
+              {serviceDefinitions.map(sDef => {
+                const status = activeCompany ? activeCompany.services[sDef.id] : { registered: false, pending: false };
+                const isLocked = !activeCompany;
+
+                return (
+                  <div
+                    key={sDef.id}
+                    className={`service-tile ${status.registered ? 'active' : status.pending ? 'pending' : ''} ${isLocked ? 'locked' : ''}`}
+                    onClick={() => {
+                      if (isLocked) return;
+                      if (status.registered || status.pending) navigate(status.route);
+                      else handleApply(activeCompany.id, sDef.id);
+                    }}
+                    style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                  >
+                    <div className="st-info">
+                      <div className="st-icon" style={{ color: sDef.color }}>{sDef.icon}</div>
+                      <span>{sDef.title}</span>
+                    </div>
+                    <div className="st-actions">
+                      {isLocked ? (
+                        <div className="st-lock-hint" title="Select entity first"><ShieldCheck size={14} /></div>
+                      ) : status.registered ? (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {sDef.id === 'noc' && <button className="btn-st-launch" style={{ background: '#10b981' }} title="Download Signed NOC"><FileCheck size={14} /></button>}
+                          <button className="btn-st-launch" onClick={(e) => { e.stopPropagation(); navigate(status.route); }} title="Launch Portal"><ArrowRight size={14} /></button>
+                        </div>
+                      ) : status.pending ? (
+                        <button className="btn-st-pending" onClick={(e) => { e.stopPropagation(); navigate(status.route); }} title="View Status"><Clock size={14} /></button>
+                      ) : (
+                        <button className="btn-st-apply" onClick={(e) => { e.stopPropagation(); handleApply(activeCompany.id, sDef.id); }}>Apply</button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="cc-footer">
+              <button className="btn-details" onClick={() => setShowProfileModal(true)} disabled={!activeCompany}>
+                {activeCompany ? "View Entity Profile & Records" : "Select an entity for details"}
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
 
-      {/* Meter & NOC Compliance Section */}
-      <div className="compliance-grid">
-        {/* Extraction Progress */}
-        <div className="compliance-card">
-          <div className="card-header-flex">
-            <h3>NOC Extraction Limit</h3>
-            <span className="status-badge success">Green Zone</span>
-          </div>
-          <div className="progress-container">
-            <div className="progress-label">
-              <span>Actual: 1,240 KLD</span>
-              <span>Limit: 5,000 KLD</span>
+      {applyModal.show && (
+        <div className="modal-overlay" onClick={() => setApplyModal({ show: false, comp: null, service: null })}>
+          <div className="registration-modal animated" onClick={e => e.stopPropagation()}>
+            <div className="rm-header">
+              <div className="rm-title">
+                <div className="rm-icon" style={{ color: applyModal.service.color }}>{applyModal.service.icon}</div>
+                <div>
+                  <h3>Service Registration</h3>
+                  <p>{applyModal.service.title} for <strong>{applyModal.comp.name}</strong></p>
+                </div>
+              </div>
+              <button className="btn-close" onClick={() => setApplyModal({ show: false, comp: null, service: null })}><X size={20} /></button>
             </div>
-            <div className="progress-bar-bg">
-              <div className="progress-bar-fill" style={{ width: '25%' }}></div>
-            </div>
-            <p className="progress-hint">You are at 24.8% of your permitted annual quota.</p>
-          </div>
-        </div>
-
-        {/* Live Meter Status - Clickable */}
-        <div
-          className="compliance-card clickable-card"
-          onClick={() => navigate('/meter-registration-system')}
-          style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
-        >
-          <div className="card-header-flex">
-            <h3>Registered Meter</h3>
-            <span className="status-badge info">Active</span>
-          </div>
-          <div className="meter-details">
-            <div className="m-detail">
-              <span className="m-label">Serial No:</span>
-              <span className="m-value">WM-2025-AX-442</span>
-            </div>
-            <div className="m-detail">
-              <span className="m-label">Last Ping:</span>
-              <span className="m-value">2 mins ago (IoT)</span>
-            </div>
-            <div className="m-detail">
-              <span className="m-label">Accuracy:</span>
-              <span className="m-value">Class 1.0 (Electro-mag)</span>
-            </div>
-          </div>
-          <div style={{ marginTop: '15px', borderTop: '1px solid #f1f5f9', paddingTop: '10px', textAlign: 'center' }}>
-            <span style={{ color: '#3b82f6', fontSize: '0.85rem', fontWeight: '600' }}>Manage Meter System &rarr;</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="dashboard-charts-grid">
-        {/* Weekly Trend Chart */}
-        <div className="chart-card">
-          <h3 className="card-title">Live Abstraction Trend (Last 7 Days)</h3>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={weeklyTrendData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Bar dataKey="apps" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Action Center Info */}
-        <div className="chart-card info-card">
-          <h3 className="card-title">Governance Highlights</h3>
-          <div className="info-list">
-            <div className="info-item">
-              <div className="i-icon"><Activity size={18} /></div>
-              <div className="i-content">
-                <strong>Real-time Metering</strong>
-                <p>Your meter is successfully syncing data via IoT LoRaWAN.</p>
+            <div className="rm-body">
+              <div className="alert-info">
+                <Info size={16} />
+                <span>Please provide initial infrastructure details to activate this service for your entity.</span>
+              </div>
+              <div className="form-grid">
+                <div className="input-grp">
+                  <label>Primary Contact Person</label>
+                  <input type="text" placeholder="Authorized Signatory Name" />
+                </div>
+                <div className="input-grp">
+                  <label>Service Sub-Type</label>
+                  <select>
+                    <option>Standard Corporate License</option>
+                    <option>Industrial Heavy Usage</option>
+                    <option>Governmental Special Purpose</option>
+                  </select>
+                </div>
+                <div className="input-grp full">
+                  <label>Infrastructure ID / Site Code</label>
+                  <input type="text" placeholder="e.g. JA-IND-99221" />
+                </div>
+              </div>
+              <div className="consent-box">
+                <input type="checkbox" id="consent" />
+                <label htmlFor="consent">I authorize RGWA to access my entity's groundwater history for compliance monitoring.</label>
               </div>
             </div>
-            <div className="info-item">
-              <div className="i-icon"><TrendingUp size={18} /></div>
-              <div className="i-content">
-                <strong>Penalty Notice</strong>
-                <p>Over-extraction beyond 110% of NOC will trigger auto-penalties.</p>
-              </div>
-            </div>
-            <div className="info-item">
-              <div className="i-icon"><FileText size={18} /></div>
-              <div className="i-content">
-                <strong>EAC Guidelines</strong>
-                <p>New norms for industrial abstraction are now active.</p>
-              </div>
+            <div className="rm-footer">
+              <button className="btn-cancel" onClick={() => setApplyModal({ show: false, comp: null, service: null })}>Cancel</button>
+              <button className="btn-finalize" onClick={finalizeApplication}>Activate Service & Launch Portal</button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Recent Applications Table */}
-      <div className="table-section">
-        <div className="section-header">
-          <h2 className="section-title">
-            Applications ({selectedStatus === 'All' ? 'All Statuses' : selectedStatus})
-          </h2>
-          <button className="btn-link">View All</button>
+      {registerModal && (
+        <div className="modal-overlay" onClick={() => setRegisterModal(false)}>
+          <div className="registration-modal animated" onClick={e => e.stopPropagation()}>
+            <div className="rm-header">
+              <div className="rm-title">
+                <div className="rm-icon" style={{ color: '#0f172a' }}><Building2 size={24} /></div>
+                <div>
+                  <h3>Register New Business Entity</h3>
+                  <p>Expand your corporate portfolio for groundwater management</p>
+                </div>
+              </div>
+              <button className="btn-close" onClick={() => setRegisterModal(false)}><X size={20} /></button>
+            </div>
+            <div className="rm-body">
+              <div className="alert-info">
+                <ShieldCheck size={16} />
+                <span>All new registrations undergo mandatory statutory KYC verification by RGWA.</span>
+              </div>
+              <div className="form-grid">
+                <div className="input-grp full">
+                  <label>Legal Entity Name*</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Acme Industrial Works Pvt Ltd"
+                    value={newCompName}
+                    onChange={(e) => setNewCompName(e.target.value)}
+                  />
+                </div>
+                <div className="input-grp">
+                  <label>Industrial Zone / Cluster*</label>
+                  <select value={newCompZone} onChange={(e) => setNewCompZone(e.target.value)}>
+                    <option>Jaipur (Industrial)</option>
+                    <option>Bikaner Rural</option>
+                    <option>Jodhpur SEZ</option>
+                    <option>Udaipur (South)</option>
+                    <option>Neemrana Industrial Park</option>
+                  </select>
+                </div>
+                <div className="input-grp">
+                  <label>Registration Type</label>
+                  <select>
+                    <option>Private Limited</option>
+                    <option>Partnership Firm</option>
+                    <option>Proprietorship</option>
+                    <option>Public Sector Undertaking</option>
+                  </select>
+                </div>
+              </div>
+              <div className="consent-box">
+                <input type="checkbox" id="reg-consent" />
+                <label htmlFor="reg-consent">I confirm that I am the authorized signatory for this legal entity.</label>
+              </div>
+            </div>
+            <div className="rm-footer">
+              <button className="btn-cancel" onClick={() => setRegisterModal(false)}>Cancel</button>
+              <button
+                className="btn-finalize"
+                style={{ background: '#0f172a' }}
+                onClick={() => {
+                  if (!newCompName) {
+                    alert("Please enter a legal entity name.");
+                    return;
+                  }
+                  const newId = `COMP-${Math.floor(1000 + Math.random() * 9000)}`;
+                  const newCompany = {
+                    id: newId,
+                    name: newCompName,
+                    zone: newCompZone,
+                    kyc: "Pending",
+                    avatar: newCompName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+                    services: {
+                      noc: { registered: false, pending: false, route: "/noc-portal" },
+                      meters: { registered: false, pending: false, route: "/meter-registration-system" },
+                      rigs: { registered: false, pending: false, route: "/rig-registration" },
+                      modeling: { registered: false, pending: false, route: "/utility" },
+                      monitoring: { registered: false, pending: false, route: "/reports" }
+                    }
+                  };
+                  setUserCompanies([...userCompanies, newCompany]);
+                  setActiveCompany(newCompany);
+                  setRegisterModal(false);
+                  setNewCompName("");
+                  alert(`Entity registered successfully! Identity ID: ${newId}. You are now acting as this entity.`);
+                }}
+              >
+                Register & Initialize Portfolio
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>SR NO.</th>
-                <th>APP CODE</th>
-                <th>PROJECT NAME</th>
-                <th>PURPOSE</th>
-                <th>QUANTUM (KLD)</th>
-                <th>DATE</th>
-                <th>STATUS</th>
-                <th>ACTION</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredApplications.length > 0 ? (
-                filteredApplications.map((app, index) => (
-                  <tr key={app.id}>
-                    <td>{index + 1}</td>
-                    <td>{app.code}</td>
-                    <td>{app.project}</td>
-                    <td>{app.type}</td>
-                    <td>{app.quantum}</td>
-                    <td>21-{app.month.substring(0, 3)}-{app.year}</td>
-                    <td>
-                      <span className={`badge ${getStatusBadgeClass(app.status)}`}>
-                        {app.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button className="btn btn-primary btn-xs">View</button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: '#999' }}>
-                    No applications found for the selected filters
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      )}
 
       <style jsx>{`
-        .dashboard-container {
-          padding-bottom: 50px;
-        }
+        .discovery-hub { padding: 40px; background: #f8fafc; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        
+        /* HEADER */
+        .hub-header-v3 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .hub-header-v3 h1 { font-size: 2.4rem; font-weight: 800; color: #0f172a; margin: 0 0 5px 0; letter-spacing: -0.03em; }
+        .hub-header-v3 p { color: #64748b; font-size: 1.1rem; }
+        
+        .header-context-switcher { background: white; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 6px 6px 6px 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .ac-label { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .company-dropdown { border: none; background: transparent; font-size: 1rem; font-weight: 700; color: #0f172a; outline: none; padding-right: 15px; cursor: pointer; min-width: 280px; }
+        .btn-add-entity-sm { width: 40px; height: 40px; background: #0f172a; color: white; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .btn-add-entity-sm:hover { background: #1e293b; transform: scale(1.05); }
 
-        /* Filter Bar */
-        .filter-bar {
-          background: white;
-          padding: 15px 20px;
-          border-radius: 8px;
-          margin-bottom: 25px;
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          flex-wrap: wrap;
-        }
-        .filter-header {
-           display: flex;
-           align-items: center;
-           gap: 8px;
-           font-weight: 600;
-           color: #333;
-           padding-right: 15px;
-           border-right: 1px solid #eee;
-        }
-        .filter-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex: 1;
-          min-width: 150px;
-        }
-        .filter-item select {
-          width: 100%;
-          padding: 8px 12px;
-          border: 1px solid #ddd;
-          border-radius: 6px;
-          background-color: #f8f9fa;
-          font-size: 0.9rem;
-          color: #555;
-          cursor: pointer;
-        }
-        .filter-item select:focus {
-          border-color: #007bff;
-          outline: none;
-        }
-        .filter-summary {
-          margin-left: auto;
-          padding-left: 15px;
-          border-left: 1px solid #eee;
-        }
-        .filter-count {
-          background: #007bff;
-          color: white;
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 0.85rem;
-          font-weight: 600;
-        }
-        .text-secondary { color: #6c757d; }
+        /* LAYOUT */
+        .hub-layout-v3 { display: grid; grid-template-columns: 320px 1fr; gap: 40px; max-width: 1700px; margin: 0 auto; }
+        .hub-side-v3 { display: flex; flex-direction: column; gap: 25px; }
+        .card-v3 { background: white; border-radius: 24px; padding: 25px; border: 1.5px solid #e2e8f0; }
 
-        /* Alert */
-        .alert-section {
-          background: #fff3cd;
-          border-left: 5px solid #ffc107;
-          padding: 15px;
-          margin-bottom: 25px;
-          border-radius: 6px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .alert-text {
-          color: #856404;
-          font-size: 0.95rem;
-        }
+        /* SIDEBAR COMPONENTS */
+        .portfolio-summary h3, .vault-box-v3 h3 { margin: 0 0 20px 0; font-size: 1rem; color: #0f172a; display: flex; align-items: center; gap: 10px; }
+        .stat-row { display: flex; gap: 20px; margin-bottom: 20px; }
+        .s-item label { display: block; font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
+        .s-item strong { font-size: 1.5rem; color: #0f172a; font-weight: 800; }
+        .progress-mini { height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
+        .pm-fill { height: 100%; background: #10b981; }
+        .p-desc { font-size: 0.85rem; color: #64748b; margin: 0; }
 
-        /* Information Grid */
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-        .stat-card {
-          padding: 20px;
-          border-radius: 12px;
-          color: white;
-          box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-          transition: transform 0.2s, box-shadow 0.2s;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-        }
-        .stat-card.clickable {
-          cursor: pointer;
-        }
-        .stat-card.clickable:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-        }
-        .stat-content {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 15px;
-        }
-        .stat-content h3 {
-          font-size: 1rem;
-          font-weight: 500;
-          opacity: 0.9;
-          margin-bottom: 5px;
-        }
-        .stat-value {
-          font-size: 2.2rem;
-          font-weight: 700;
-        }
-        .stat-icon {
-          background: rgba(255,255,255,0.2);
-          padding: 8px;
-          border-radius: 8px;
-          display: flex;
-        }
-        .stat-footer {
-          font-size: 0.8rem;
-          opacity: 0.8;
-          background: rgba(0,0,0,0.05);
-          padding: 5px 10px;
-          border-radius: 4px;
-          align-self: flex-start;
-        }
+        .v-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .v-add { background: #f1f5f9; border: none; width: 24px; height: 24px; border-radius: 6px; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .v-list { display: flex; flex-direction: column; gap: 10px; }
+        .v-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1.5px solid #f1f5f9; font-size: 0.8rem; color: #475569; }
 
-        /* Charts */
-        .dashboard-charts-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-        .chart-card {
-           background: white;
-           border-radius: 12px;
-           padding: 20px;
-           box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .card-title {
-          font-size: 1.1rem;
-          color: #333;
-          margin-bottom: 20px;
-          font-weight: 600;
-        }
+        .company-grid-v3.full-width { grid-template-columns: repeat(2, 1fr); gap: 30px; }
+        .company-card-v3 { background: white; border-radius: 28px; padding: 35px; border: 1.5px solid #e2e8f0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; height: fit-content; }
+        .company-card-v3.main-panel { background: white; border-color: #3b82f6; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1); }
+        .company-card-v3:hover { border-color: #cbd5e1; transform: translateY(-5px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08); }
+        
+        .cc-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; }
+        .cc-avatar { width: 56px; height: 56px; background: #0f172a; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; }
+        .cc-title { flex: 1; }
+        .cc-title h3 { margin: 0; font-size: 1.5rem; color: #0f172a; letter-spacing: -0.01em; }
+        .cc-id { font-size: 0.85rem; color: #64748b; font-weight: 500; }
+        
+        .cc-kyc { font-size: 0.75rem; font-weight: 700; padding: 6px 14px; border-radius: 50px; display: flex; align-items: center; gap: 6px; }
+        .cc-kyc.verified { background: #ecfdf5; color: #059669; }
+        .cc-kyc.pending { background: #fff7ed; color: #c2410c; }
 
-        /* Compliance Grid */
-        .compliance-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 20px;
-          margin-bottom: 25px;
-        }
-        .compliance-card {
-          background: white;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-          border-top: 4px solid #3b82f6;
-        }
-        .card-header-flex {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 15px;
-        }
-        .card-header-flex h3 {
-          font-size: 1rem;
-          color: #475569;
-          font-weight: 600;
-          margin: 0;
-        }
-        .status-badge {
-          padding: 4px 10px;
-          border-radius: 20px;
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-        .status-badge.success { background: #dcfce7; color: #166534; }
-        .status-badge.info { background: #e0f2fe; color: #0369a1; }
+        .btn-manage-entity { background: #0f172a; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; width: 100%; justify-content: center; margin-top: 10px; }
+        .btn-manage-entity:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 
-        .progress-container { margin-top: 10px; }
-        .progress-label {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.85rem;
-          color: #64748b;
-          margin-bottom: 8px;
-          font-weight: 500;
-        }
-        .progress-bar-bg {
-          height: 10px;
-          background: #f1f5f9;
-          border-radius: 5px;
-          overflow: hidden;
-        }
-        .progress-bar-fill {
-          height: 100%;
-          background: linear-gradient(90deg, #3b82f6, #60a5fa);
-          border-radius: 5px;
-        }
-        .progress-hint {
-          font-size: 0.75rem;
-          color: #94a3b8;
-          margin-top: 8px;
-        }
+        .entity-selection-main { flex: 1; }
+        .cc-services-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
+        
+        .cc-services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .service-tile { background: #f8fafc; border: 1.5px solid #f1f5f9; border-radius: 16px; padding: 15px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .service-tile:hover:not(.locked) { transform: translateY(-3px); border-color: #3b82f6; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1); background: white; }
+        .service-tile.active { border-color: #3b82f6; background: #eff6ff80; }
+        .service-tile.pending { border-color: #f59e0b; background: #fffbeb80; }
+        
+        .st-info { display: flex; align-items: center; gap: 12px; }
+        .st-info span { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+        .st-icon { width: 40px; height: 40px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.2s; }
+        .service-tile:hover .st-icon { transform: scale(1.1); }
 
-        .meter-details { display: flex; flex-direction: column; gap: 8px; }
-        .m-detail { display: flex; justify-content: space-between; font-size: 0.85rem; }
-        .m-label { color: #64748b; }
-        .m-value { color: #1e293b; font-weight: 600; }
+        .st-actions button { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-st-apply { background: white; border: 1.5px solid #3b82f6; color: #3b82f6; }
+        .btn-st-apply:hover { background: #3b82f6; color: white; }
+        .btn-st-launch { background: #0f172a; border: none; color: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .btn-st-launch:hover { background: #1e293b; transform: translateX(3px); }
+        .btn-st-pending { background: #fef3c7; border: none; color: #92400e; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
 
-        .info-list { display: flex; flex-direction: column; gap: 20px; }
-        .info-item { display: flex; gap: 15px; align-items: flex-start; }
-        .i-icon { width: 40px; height: 40px; border-radius: 8px; background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .i-content strong { display: block; font-size: 0.95rem; color: #1e293b; margin-bottom: 4px; }
-        .i-content p { font-size: 0.85rem; color: #64748b; margin: 0; line-height: 1.5; }
+        .cc-footer { border-top: 1.5px solid #f1f5f9; padding-top: 20px; }
+        .btn-details { background: transparent; border: none; color: #64748b; font-size: 0.85rem; font-weight: 700; cursor: pointer; text-decoration: underline; }
+        .btn-details:hover:not(:disabled) { color: #0f172a; }
+        .btn-details:disabled { cursor: not-allowed; opacity: 0.5; text-decoration: none; }
 
-        /* Table */
-        .table-section {
-           background: white;
-           border-radius: 12px;
-           padding: 20px;
-           box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-        .section-title {
-          font-size: 1.1rem;
-          color: #333;
-          font-weight: 600;
-          margin: 0;
-        }
-        .btn-link {
-          background: none;
-          border: none;
-          color: #007bff;
-          cursor: pointer;
-          font-weight: 600;
-        }
+        .no-context-txt { font-size: 0.85rem; color: #94a3b8; line-height: 1.6; margin: 0; font-style: italic; }
+        .text-green { color: #10b981; }
 
-        table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0;
-        }
-        th {
-          background-color: #f8f9fa;
-          color: #6c757d;
-          font-weight: 600;
-          text-transform: uppercase;
-          font-size: 0.8rem;
-          padding: 15px;
-          border-bottom: 2px solid #eee;
-        }
-        td {
-          padding: 15px;
-          border-bottom: 1px solid #eee;
-          font-size: 0.9rem;
-          color: #333;
-        }
-        .badge {
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-        .badge-warning {
-          background: #fff3cd;
-          color: #856404;
-        }
-        .badge-info {
-          background: #d1ecf1;
-          color: #0c5460;
-        }
-        .badge-success {
-          background: #d4edda;
-          color: #155724;
-        }
-        .badge-secondary {
-          background: #e2e3e5;
-          color: #383d41;
-        }
-        .btn-xs {
-           padding: 4px 12px;
-           font-size: 0.8rem;
-           border-radius: 4px;
+        .service-tile.locked { opacity: 0.6; filter: grayscale(0.5); cursor: not-allowed; }
+        .st-lock-hint { width: 32px; height: 32px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #94a3b8; }
+
+        .animated { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* MODAL STYLES */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .registration-modal { background: white; width: 600px; border-radius: 32px; padding: 40px; box-shadow: 0 40px 80px -15px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2); }
+        
+        .rm-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+        .rm-title { display: flex; gap: 20px; align-items: center; }
+        .rm-icon { width: 50px; height: 50px; background: #f8fafc; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .rm-title h3 { margin: 0; font-size: 1.5rem; color: #0f172a; font-weight: 800; }
+        .rm-title p { margin: 4px 0 0; color: #64748b; font-size: 0.95rem; }
+        .btn-close { background: transparent; border: none; color: #94a3b8; cursor: pointer; }
+
+        .alert-info { background: #eff6ff; color: #2563eb; padding: 12px 18px; border-radius: 12px; display: flex; align-items: center; gap: 12px; font-size: 0.85rem; font-weight: 600; margin-bottom: 30px; border: 1px solid #dbeafe; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .input-grp { display: flex; flex-direction: column; gap: 8px; }
+        .input-grp.full { grid-column: span 2; }
+        .input-grp label { font-size: 0.8rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
+        .input-grp input, .input-grp select { padding: 12px 16px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-family: inherit; font-size: 0.95rem; outline: none; transition: all 0.2s; }
+        .input-grp input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+        .consent-box { display: flex; gap: 12px; align-items: flex-start; }
+        .consent-box input { margin-top: 4px; }
+        .consent-box label { font-size: 0.85rem; color: #64748b; line-height: 1.5; font-weight: 500; cursor: pointer; }
+
+        .rm-footer { display: flex; justify-content: flex-end; gap: 15px; margin-top: 40px; }
+        .btn-cancel { background: transparent; border: none; font-weight: 700; color: #64748b; cursor: pointer; padding: 12px 20px; }
+        .btn-finalize { background: #0f172a; color: white; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-finalize:hover { background: #1e293b; transform: translateY(-2px); }
+
+        @media (max-width: 1400px) {
+          .hub-layout-v3 { grid-template-columns: 1fr; }
+          .hub-side-v3 { display: grid; grid-template-columns: 1fr 1fr; }
+          .company-grid-v3 { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>

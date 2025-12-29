@@ -8,6 +8,86 @@ const MeterModels = () => {
 
     const [models] = useState([
         {
+            id: 'M-ACC-01',
+            manufacturer: 'ACCUMAX (AIPL)',
+            model: 'Electromagnetic Flow Meter',
+            type: 'Electromagnetic',
+            usage: 'Industrial/CGWA',
+            size: '15-350 NB',
+            flow: '±0.5% Accuracy',
+            status: 'Approved',
+            approvalDate: '12 Dec 1992 (Est.)',
+            certificate: 'ISO 4064:2014 / CE',
+            ipRating: 'IP68',
+            comms: '4-20mA / RS485 / Pulse',
+            batteryLife: 'AC/DC/Battery',
+            accuracy: 'Class 1.0 (±0.5% FS)'
+        },
+        {
+            id: 'M-ACC-02',
+            manufacturer: 'ACCUMAX (AIPL)',
+            model: 'Smart Telemetry Meter',
+            type: 'Digital Flow (CGWA)',
+            usage: 'Abstraction Monitoring',
+            size: '15-350 NB',
+            flow: 'CGWA Compliant',
+            status: 'Approved',
+            approvalDate: 'Approved Model',
+            certificate: 'Legal Metrology Approved',
+            ipRating: 'IP68',
+            comms: 'GSM / GPRS / Cloud',
+            batteryLife: 'Hybrid Power',
+            accuracy: '±0.5% F.S.'
+        },
+        {
+            id: 'M-ACC-03',
+            manufacturer: 'ACCUMAX (AIPL)',
+            model: 'Turbine Flow Meter',
+            type: 'Turbine (In-line)',
+            usage: 'Liquid Processing',
+            size: '15-100 NB',
+            flow: '15-200 m³/h',
+            status: 'Approved',
+            approvalDate: 'Current',
+            certificate: 'CE Certified',
+            ipRating: 'IP67',
+            comms: 'RS485 Modbus',
+            batteryLife: 'Long Life',
+            accuracy: '±1% F.S.'
+        },
+        {
+            id: 'M-ACC-04',
+            manufacturer: 'ACCUMAX (AIPL)',
+            model: 'Ultrasonic Smart Meter',
+            type: 'Ultrasonic',
+            usage: 'IoT Water Management',
+            size: '20 NB',
+            flow: 'Precision Flow',
+            status: 'Approved',
+            approvalDate: 'New Launch',
+            certificate: 'NB-IoT / LoRaWAN',
+            ipRating: 'IP68',
+            comms: 'LoRa / NB-IoT',
+            batteryLife: '10+ Years (Lithium)',
+            accuracy: 'Class 2/B'
+        },
+        {
+            id: 'M-ACC-05',
+            manufacturer: 'ACCUMAX (AIPL)',
+            model: 'Piezometer / DWLR',
+            type: 'Hydro-static',
+            usage: 'Groundwater Level',
+            size: 'Borewell Fit',
+            flow: 'Digital Recorder',
+            status: 'Approved',
+            approvalDate: 'CGWA Norms',
+            certificate: 'Telemetry Ready',
+            ipRating: 'IP68 (Sensor)',
+            comms: '4-20mA / GSM',
+            batteryLife: 'Continuous',
+            accuracy: '±0.1% FS'
+        },
+        {
             id: 'M-101',
             manufacturer: 'FlowMaster Ltd.',
             model: 'FM-200',
@@ -22,38 +102,6 @@ const MeterModels = () => {
             comms: 'NB-IoT / LoRaWAN',
             batteryLife: '10 Years',
             accuracy: 'Class 1.0 (±1%)'
-        },
-        {
-            id: 'M-102',
-            manufacturer: 'AquaTech',
-            model: 'AT-Ultra',
-            type: 'Ultrasonic',
-            usage: 'Surface Water',
-            size: 'DN80',
-            flow: '10-100 m³/h',
-            status: 'Pending',
-            approvalDate: '-',
-            certificate: 'Pending Review',
-            ipRating: 'IP67',
-            comms: 'GPRS / 4G',
-            batteryLife: '5 Years',
-            accuracy: 'Class 2.0 (±2%)'
-        },
-        {
-            id: 'M-103',
-            manufacturer: 'Zenner India',
-            model: 'Woltman-W',
-            type: 'Mechanical',
-            usage: 'Groundwater',
-            size: 'DN100',
-            flow: '20-150 m³/h',
-            status: 'Approved',
-            approvalDate: '20 Nov 2023',
-            certificate: 'ISO-4064-2023-089',
-            ipRating: 'IP68',
-            comms: 'LoRaWAN',
-            batteryLife: '12 Years',
-            accuracy: 'Class 1.5 (±1.5%)'
         },
     ]);
 
@@ -144,9 +192,6 @@ const MeterModels = () => {
                 </div>
                 <div className="header-actions">
                     <button className="btn-secondary-v2"><Download size={16} /> Compliance Specs</button>
-                    <button className="btn-primary-v2" onClick={() => setActiveTab('register')}>
-                        <Plus size={18} /> Register New Model
-                    </button>
                 </div>
             </div>
 
@@ -157,12 +202,6 @@ const MeterModels = () => {
                         onClick={() => setActiveTab('list')}
                     >
                         <List size={16} /> Approved Models
-                    </button>
-                    <button
-                        className={`tab-btn ${activeTab === 'register' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('register')}
-                    >
-                        <FileText size={16} /> Model Registration
                     </button>
                     <button
                         className={`tab-btn ${activeTab === 'standards' ? 'active' : ''}`}
@@ -260,52 +299,6 @@ const MeterModels = () => {
                         </div>
                     )}
 
-                    {activeTab === 'register' && (
-                        <div className="tab-pane active animated">
-                            <div className="form-portal">
-                                <div className="form-info">
-                                    <Bookmark size={24} className="text-blue-600" />
-                                    <h3>Type Approval Application</h3>
-                                    <p>Manufacturers must submit technical diagrams and NABL test reports for type approval according to RGWA-2024 guidelines.</p>
-                                </div>
-                                <div className="registration-form-grid">
-                                    <div className="form-group">
-                                        <label>Manufacturer Name</label>
-                                        <input type="text" placeholder="e.g. Zenner India Ltd." />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Model Identifier</label>
-                                        <input type="text" placeholder="e.g. WMT-400" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Measurement Technology</label>
-                                        <select>
-                                            <option>Electromagnetic</option>
-                                            <option>Ultrasonic</option>
-                                            <option>Mechanical (Woltman)</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Accuracy Class</label>
-                                        <select>
-                                            <option>Class 1.0 (ISO 4064)</option>
-                                            <option>Class 2.0 (ISO 4064)</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group full-width">
-                                        <label>Technical Datasheet (PDF)</label>
-                                        <div className="file-drop-zone">
-                                            <Plus size={24} />
-                                            <span>Upload NABL Calibration Certificate</span>
-                                        </div>
-                                    </div>
-                                    <div className="form-actions-v2">
-                                        <button className="btn-submit-v2">Submit for Scrutiny</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
                     {activeTab === 'standards' && (
                         <div className="tab-pane active animated">

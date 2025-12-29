@@ -1,55 +1,55 @@
 import React, { useState } from 'react';
 import { NavLink, Routes, Route, Navigate } from 'react-router-dom';
 import { User, Lock, Bell } from 'lucide-react';
-import CompanyProfile from './CompanyProfile';
+import UserProfile from './UserProfile';
 import ChangePassword from './ChangePassword';
 import NotificationSettings from './NotificationSettings';
 
 const AccountSettings = () => {
-    return (
-        <div className="account-settings-container">
-            {/* Page Header */}
-            <div className="page-header">
-                <h1>Account Settings</h1>
-                <p className="subtitle">Manage your account preferences and security</p>
-            </div>
+  return (
+    <div className="account-settings-container">
+      {/* Page Header */}
+      <div className="page-header">
+        <h1>Account Settings</h1>
+        <p className="subtitle">Manage your personal preferences and security</p>
+      </div>
 
-            {/* Tabs Navigation */}
-            <div className="tabs-container">
-                <NavLink
-                    to="/settings/profile"
-                    className={({ isActive }) => `tab ${isActive ? 'active' : ''}`}
-                >
-                    <User size={18} />
-                    <span>Company Profile</span>
-                </NavLink>
-                <NavLink
-                    to="/settings/password"
-                    className={({ isActive }) => `tab ${isActive ? 'active' : ''}`}
-                >
-                    <Lock size={18} />
-                    <span>Change Password</span>
-                </NavLink>
-                <NavLink
-                    to="/settings/notifications"
-                    className={({ isActive }) => `tab ${isActive ? 'active' : ''}`}
-                >
-                    <Bell size={18} />
-                    <span>Notifications</span>
-                </NavLink>
-            </div>
+      {/* Tabs Navigation */}
+      <div className="tabs-container">
+        <NavLink
+          to="/settings/profile"
+          className={({ isActive }) => `tab ${isActive ? 'active' : ''}`}
+        >
+          <User size={18} />
+          <span>User Profile</span>
+        </NavLink>
+        <NavLink
+          to="/settings/password"
+          className={({ isActive }) => `tab ${isActive ? 'active' : ''}`}
+        >
+          <Lock size={18} />
+          <span>Change Password</span>
+        </NavLink>
+        <NavLink
+          to="/settings/notifications"
+          className={({ isActive }) => `tab ${isActive ? 'active' : ''}`}
+        >
+          <Bell size={18} />
+          <span>Notifications</span>
+        </NavLink>
+      </div>
 
-            {/* Tab Content */}
-            <div className="tab-content">
-                <Routes>
-                    <Route index element={<Navigate to="profile" replace />} />
-                    <Route path="profile" element={<CompanyProfile />} />
-                    <Route path="password" element={<ChangePassword />} />
-                    <Route path="notifications" element={<NotificationSettings />} />
-                </Routes>
-            </div>
+      {/* Tab Content */}
+      <div className="tab-content">
+        <Routes>
+          <Route index element={<Navigate to="profile" replace />} />
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="password" element={<ChangePassword />} />
+          <Route path="notifications" element={<NotificationSettings />} />
+        </Routes>
+      </div>
 
-            <style jsx>{`
+      <style jsx>{`
         .account-settings-container {
           padding-bottom: 50px;
         }
@@ -114,8 +114,8 @@ const AccountSettings = () => {
           min-height: 400px;
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default AccountSettings;

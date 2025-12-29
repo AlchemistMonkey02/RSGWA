@@ -2,12 +2,12 @@ import React from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
-const PortalLayout = ({ children, userRole }) => {
+const PortalLayout = ({ children, userRole, setUserRole }) => {
   return (
     <div className="layout">
       <Sidebar userRole={userRole} />
       <div className="main-content">
-        <Header />
+        <Header userRole={userRole} setUserRole={setUserRole} />
         <main className="page-content">
           {children}
         </main>
