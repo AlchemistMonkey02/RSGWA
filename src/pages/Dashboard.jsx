@@ -4,7 +4,8 @@ import {
   FileText, Droplets, ArrowRight, ArrowLeft, Activity, AlertTriangle,
   FileCheck, ShieldCheck, Ruler, Truck, Wallet, BarChart3,
   Clock, Bell, Settings, ChevronRight, CheckCircle2,
-  XCircle, Info, Calculator, Globe, Plus, X, Building2, Shield
+  XCircle, Info, Calculator, Globe, Plus, X, Building2, Shield,
+  Shovel, HardHat, GraduationCap, RotateCcw, Gauge, Gavel, PlusCircle, Search, ClipboardCheck
 } from 'lucide-react';
 
 const Dashboard = ({ activeCompany, setActiveCompany, userCompanies, setUserCompanies }) => {
@@ -13,13 +14,6 @@ const Dashboard = ({ activeCompany, setActiveCompany, userCompanies, setUserComp
   // Multi-Entity Mock Data
   // Multi-Entity state now managed at App level
 
-  const serviceDefinitions = [
-    { id: 'noc', title: "Groundwater NOC Services", icon: <FileText size={20} />, color: "#3b82f6" },
-    { id: 'meters', title: "Water Flow Meter Registration", icon: <Droplets size={20} />, color: "#10b981" },
-    { id: 'rigs', title: "Rig Registration", icon: <Truck size={20} />, color: "#f59e0b" },
-    { id: 'modeling', title: "Ground Water Modeling", icon: <Globe size={20} />, color: "#7c3aed" },
-    { id: 'monitoring', title: "Ground Water Level Monitoring", icon: <Activity size={20} />, color: "#ef4444" }
-  ];
 
   const [vaultDocs, setVaultDocs] = useState([
     { id: 1, name: "Group PAN Card.pdf", type: "KYC", size: "1.2 MB", date: "2024-11-20" },
@@ -28,24 +22,42 @@ const Dashboard = ({ activeCompany, setActiveCompany, userCompanies, setUserComp
 
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedComp, setSelectedComp] = useState(null);
-  const [applyModal, setApplyModal] = useState({ show: false, comp: null, service: null });
   const [registerModal, setRegisterModal] = useState(false);
   const [newCompName, setNewCompName] = useState("");
   const [newCompZone, setNewCompZone] = useState("Jaipur (Industrial)");
+  const [serviceSearchQuery, setServiceSearchQuery] = useState('');
 
-  const handleApply = (compId, serviceId) => {
-    const comp = userCompanies.find(c => c.id === compId);
-    setApplyModal({ show: true, comp, service: serviceDefinitions.find(s => s.id === serviceId) });
+  // Service to Route Mapping
+  const getServiceRoute = (serviceId) => {
+    const routeMap = {
+      // Regulatory NOC Services
+      'abstraction-industry': '/noc-portal',
+      'abstraction-mining': '/noc-portal',
+      'abstraction-infra': '/noc-portal',
+      'abstraction-commercial': '/noc-portal',
+      
+      // Drilling & Infrastructure
+      'rig-registration': '/rig-registration',
+      'drilling-permission': '/borewell-drilling-permission',
+      'well-conversion': '/well-conversion',
+      
+      // Compliance & Monitoring
+      'noc-renewal': '/renewal',
+      'compliance-reporting': '/compliance',
+      'meter-installation': '/meter-registration-system',
+      
+      // Enforcement & Legal
+      'ec-orders': '/eac',
+      'violation-regularization': '/violation-regularization',
+      
+      // Special Permissions
+      'emergency-noc': '/emergency-noc',
+      'tanker-noc': '/tanker-transport-noc'
+    };
+    
+    return routeMap[serviceId] || '/noc-portal'; // Default to noc-portal
   };
 
-  const finalizeApplication = () => {
-    const { comp, service } = applyModal;
-    setActiveCompany(comp);
-    setApplyModal({ show: false, comp: null, service: null });
-
-    const route = comp.services[service.id].route;
-    navigate(route);
-  };
 
   return (
     <div className="discovery-hub animated">
@@ -111,107 +123,134 @@ const Dashboard = ({ activeCompany, setActiveCompany, userCompanies, setUserComp
         </aside>
 
         <main className="entity-selection-main">
-          <div className="company-card-v3 main-panel">
-            <div className="cc-services-label">
-              {activeCompany ? `Available Services for ${activeCompany.name}` : "Select an Entity to Manage Services"}
+
+          {/* Master Services Portfolio Section */}
+          <div className="services-portfolio-section card-v3">
+            <div className="portfolio-header-section">
+              <div>
+                <h2 className="portfolio-title">Master Services Portfolio</h2>
+                <p className="portfolio-subtitle">Unified Ground Water Regulatory Platform • Rajasthan State</p>
+              </div>
+              <div className="search-bar-container">
+                <Search size={18} className="search-icon" />
+                <input 
+                  type="text" 
+                  placeholder="Search for a service (e.g. Mining, Rig, Renewal)..." 
+                  value={serviceSearchQuery}
+                  onChange={(e) => setServiceSearchQuery(e.target.value)}
+                  className="service-search-input"
+                />
+              </div>
             </div>
 
-            <div className="cc-services-grid">
-              {serviceDefinitions.map(sDef => {
-                const status = activeCompany ? activeCompany.services[sDef.id] : { registered: false, pending: false };
-                const isLocked = !activeCompany;
+            {(() => {
+              const serviceCategories = [
+                {
+                  title: "Regulatory NOC Services",
+                  description: "Statutory permissions required before starting abstraction",
+                  services: [
+                    { id: 'abstraction-industry', title: "Groundwater Abstraction - Industry", icon: <Building2 className="text-blue-500" />, purpose: "Industrial process water", who: "Factories, Manufacturing Units" },
+                    { id: 'abstraction-mining', title: "Groundwater Abstraction - Mining", icon: <Shovel className="text-amber-600" />, purpose: "Dewatering & processing", who: "Mining Lease Holders" },
+                    { id: 'abstraction-infra', title: "Infrastructure Projects", icon: <HardHat className="text-orange-500" />, purpose: "Construction & Operation", who: "Roads, Railways, Housing" },
+                    { id: 'abstraction-commercial', title: "Commercial / Institutional", icon: <GraduationCap className="text-purple-500" />, purpose: "Occupancy-based demand", who: "Hotels, Hospitals, Schools" },
+                  ]
+                },
+                {
+                  title: "Drilling & Infrastructure",
+                  description: "Permissions for rigs and drilling activity",
+                  services: [
+                    { id: 'rig-registration', title: "Rig Registration NOC", icon: <RotateCcw className="text-slate-600" />, purpose: "Authorize drilling rigs", who: "Drilling Contractors" },
+                    { id: 'drilling-permission', title: "Borewell Drilling Permission", icon: <PlusCircle className="text-emerald-500" />, purpose: "Prior permission to drill", who: "Borewell owners" },
+                    { id: 'well-conversion', title: "Well Conversion/Deepening", icon: <ArrowRight className="text-cyan-500" />, purpose: "Shallow to deep conversion", who: "Existing well owners" },
+                  ]
+                },
+                {
+                  title: "Compliance & Monitoring",
+                  description: "Ongoing regulatory requirements",
+                  services: [
+                    { id: 'noc-renewal', title: "NOC Renewal Service", icon: <RotateCcw className="text-blue-600" />, purpose: "Extend NOC validity", who: "Existing NOC holders" },
+                    { id: 'compliance-reporting', title: "Compliance Reporting", icon: <ClipboardCheck className="text-indigo-500" />, purpose: "Data submission", who: "All NOC holders" },
+                    { id: 'meter-installation', title: "Meter Validation NOC", icon: <Gauge className="text-rose-500" />, purpose: "Verify meter accuracy", who: "Large abstractors" },
+                  ]
+                },
+                {
+                  title: "Enforcement & Legal",
+                  description: "Violation handling and regularization",
+                  services: [
+                    { id: 'ec-orders', title: "Penalty & EC Orders", icon: <Gavel className="text-red-600" />, purpose: "Environmental compensation", who: "Violators/Notice seekers" },
+                    { id: 'violation-regularization', title: "Violation Regularization", icon: <AlertTriangle className="text-yellow-600" />, purpose: "Amnesty & Legalization", who: "Unauthorized users" },
+                  ]
+                },
+                {
+                  title: "Special Permissions",
+                  description: "Emergency and bulk transportation",
+                  services: [
+                    { id: 'emergency-noc', title: "Emergency NOC", icon: <AlertTriangle className="text-red-500" />, purpose: "Drought/Emergency use", who: "Critical sector users" },
+                    { id: 'tanker-noc', title: "Tanker/Transportation NOC", icon: <Truck className="text-sky-500" />, purpose: "Bulk water supply", who: "Suppliers/Transporters" },
+                  ]
+                }
+              ];
 
-                return (
-                  <div
-                    key={sDef.id}
-                    className={`service-tile ${status.registered ? 'active' : status.pending ? 'pending' : ''} ${isLocked ? 'locked' : ''}`}
-                    onClick={() => {
-                      if (isLocked) return;
-                      if (status.registered || status.pending) navigate(status.route);
-                      else handleApply(activeCompany.id, sDef.id);
-                    }}
-                    style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="st-info">
-                      <div className="st-icon" style={{ color: sDef.color }}>{sDef.icon}</div>
-                      <span>{sDef.title}</span>
+              // Filter services based on search query
+              const filteredCategories = serviceCategories.map(cat => ({
+                ...cat,
+                services: cat.services.filter(svc => 
+                  svc.title.toLowerCase().includes(serviceSearchQuery.toLowerCase()) ||
+                  svc.purpose.toLowerCase().includes(serviceSearchQuery.toLowerCase()) ||
+                  svc.who.toLowerCase().includes(serviceSearchQuery.toLowerCase())
+                )
+              })).filter(cat => cat.services.length > 0);
+
+              return (
+                <div className="categories-grid">
+                  {filteredCategories.map((cat, idx) => (
+                    <div key={idx} className="category-section">
+                      <div className="category-head">
+                        <h3 className="category-title">{cat.title}</h3>
+                        <p className="category-description">{cat.description}</p>
+                      </div>
+                      <div className="services-list-grid">
+                        {cat.services.map((svc) => (
+                          <div 
+                            key={svc.id} 
+                            className="service-card-item" 
+                            onClick={() => {
+                              if (activeCompany) {
+                                const route = getServiceRoute(svc.id);
+                                // If route is /noc-portal, pass service ID as URL parameter
+                                if (route === '/noc-portal') {
+                                  navigate(`/noc-portal?service=${svc.id}`);
+                                } else {
+                                  navigate(route);
+                                }
+                              } else {
+                                alert('Please select an entity first to apply for services');
+                              }
+                            }}
+                            style={{ cursor: activeCompany ? 'pointer' : 'not-allowed', opacity: activeCompany ? 1 : 0.6 }}
+                          >
+                            <div className="svc-icon-box">
+                              {svc.icon}
+                            </div>
+                            <div className="svc-details">
+                              <h4 className="svc-title">{svc.title}</h4>
+                              <p className="svc-purpose"><strong>Purpose:</strong> {svc.purpose}</p>
+                              <p className="svc-who"><strong>Who Applies:</strong> {svc.who}</p>
+                            </div>
+                            <button className="svc-apply-btn">
+                              Apply <ArrowRight size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="st-actions">
-                      {isLocked ? (
-                        <div className="st-lock-hint" title="Select entity first"><ShieldCheck size={14} /></div>
-                      ) : status.registered ? (
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          {sDef.id === 'noc' && <button className="btn-st-launch" style={{ background: '#10b981' }} title="Download Signed NOC"><FileCheck size={14} /></button>}
-                          <button className="btn-st-launch" onClick={(e) => { e.stopPropagation(); navigate(status.route); }} title="Launch Portal"><ArrowRight size={14} /></button>
-                        </div>
-                      ) : status.pending ? (
-                        <button className="btn-st-pending" onClick={(e) => { e.stopPropagation(); navigate(status.route); }} title="View Status"><Clock size={14} /></button>
-                      ) : (
-                        <button className="btn-st-apply" onClick={(e) => { e.stopPropagation(); handleApply(activeCompany.id, sDef.id); }}>Apply</button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="cc-footer">
-              <button className="btn-details" onClick={() => setShowProfileModal(true)} disabled={!activeCompany}>
-                {activeCompany ? "View Entity Profile & Records" : "Select an entity for details"}
-              </button>
-            </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </main>
       </div>
-
-      {applyModal.show && (
-        <div className="modal-overlay" onClick={() => setApplyModal({ show: false, comp: null, service: null })}>
-          <div className="registration-modal animated" onClick={e => e.stopPropagation()}>
-            <div className="rm-header">
-              <div className="rm-title">
-                <div className="rm-icon" style={{ color: applyModal.service.color }}>{applyModal.service.icon}</div>
-                <div>
-                  <h3>Service Registration</h3>
-                  <p>{applyModal.service.title} for <strong>{applyModal.comp.name}</strong></p>
-                </div>
-              </div>
-              <button className="btn-close" onClick={() => setApplyModal({ show: false, comp: null, service: null })}><X size={20} /></button>
-            </div>
-            <div className="rm-body">
-              <div className="alert-info">
-                <Info size={16} />
-                <span>Please provide initial infrastructure details to activate this service for your entity.</span>
-              </div>
-              <div className="form-grid">
-                <div className="input-grp">
-                  <label>Primary Contact Person</label>
-                  <input type="text" placeholder="Authorized Signatory Name" />
-                </div>
-                <div className="input-grp">
-                  <label>Service Sub-Type</label>
-                  <select>
-                    <option>Standard Corporate License</option>
-                    <option>Industrial Heavy Usage</option>
-                    <option>Governmental Special Purpose</option>
-                  </select>
-                </div>
-                <div className="input-grp full">
-                  <label>Infrastructure ID / Site Code</label>
-                  <input type="text" placeholder="e.g. JA-IND-99221" />
-                </div>
-              </div>
-              <div className="consent-box">
-                <input type="checkbox" id="consent" />
-                <label htmlFor="consent">I authorize RGWA to access my entity's groundwater history for compliance monitoring.</label>
-              </div>
-            </div>
-            <div className="rm-footer">
-              <button className="btn-cancel" onClick={() => setApplyModal({ show: false, comp: null, service: null })}>Cancel</button>
-              <button className="btn-finalize" onClick={finalizeApplication}>Activate Service & Launch Portal</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {registerModal && (
         <div className="modal-overlay" onClick={() => setRegisterModal(false)}>
@@ -357,36 +396,6 @@ const Dashboard = ({ activeCompany, setActiveCompany, userCompanies, setUserComp
         .btn-manage-entity:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 
         .entity-selection-main { flex: 1; }
-        .cc-services-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
-        
-        .cc-services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
-        .service-tile { background: #f8fafc; border: 1.5px solid #f1f5f9; border-radius: 16px; padding: 15px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .service-tile:hover:not(.locked) { transform: translateY(-3px); border-color: #3b82f6; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1); background: white; }
-        .service-tile.active { border-color: #3b82f6; background: #eff6ff80; }
-        .service-tile.pending { border-color: #f59e0b; background: #fffbeb80; }
-        
-        .st-info { display: flex; align-items: center; gap: 12px; }
-        .st-info span { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
-        .st-icon { width: 40px; height: 40px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.2s; }
-        .service-tile:hover .st-icon { transform: scale(1.1); }
-
-        .st-actions button { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-        .btn-st-apply { background: white; border: 1.5px solid #3b82f6; color: #3b82f6; }
-        .btn-st-apply:hover { background: #3b82f6; color: white; }
-        .btn-st-launch { background: #0f172a; border: none; color: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        .btn-st-launch:hover { background: #1e293b; transform: translateX(3px); }
-        .btn-st-pending { background: #fef3c7; border: none; color: #92400e; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-
-        .cc-footer { border-top: 1.5px solid #f1f5f9; padding-top: 20px; }
-        .btn-details { background: transparent; border: none; color: #64748b; font-size: 0.85rem; font-weight: 700; cursor: pointer; text-decoration: underline; }
-        .btn-details:hover:not(:disabled) { color: #0f172a; }
-        .btn-details:disabled { cursor: not-allowed; opacity: 0.5; text-decoration: none; }
-
-        .no-context-txt { font-size: 0.85rem; color: #94a3b8; line-height: 1.6; margin: 0; font-style: italic; }
-        .text-green { color: #10b981; }
-
-        .service-tile.locked { opacity: 0.6; filter: grayscale(0.5); cursor: not-allowed; }
-        .st-lock-hint { width: 32px; height: 32px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #94a3b8; }
 
         .animated { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -420,10 +429,179 @@ const Dashboard = ({ activeCompany, setActiveCompany, userCompanies, setUserComp
         .btn-finalize { background: #0f172a; color: white; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .btn-finalize:hover { background: #1e293b; transform: translateY(-2px); }
 
+        /* Services Portfolio Styles */
+        .services-portfolio-section {
+          margin-top: 40px;
+        }
+        .portfolio-header-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-bottom: 30px;
+          flex-wrap: wrap;
+          gap: 20px;
+        }
+        .portfolio-title {
+          font-size: 2rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0 0 5px 0;
+        }
+        .portfolio-subtitle {
+          color: #64748b;
+          font-size: 0.95rem;
+          font-weight: 600;
+          margin: 0;
+        }
+        .search-bar-container {
+          position: relative;
+          width: 100%;
+          max-width: 400px;
+        }
+        .search-bar-container .search-icon {
+          position: absolute;
+          left: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8;
+          z-index: 1;
+        }
+        .service-search-input {
+          width: 100%;
+          padding: 14px 15px 14px 45px;
+          border-radius: 12px;
+          border: 1.5px solid #e2e8f0;
+          outline: none;
+          font-size: 0.95rem;
+          background: #f8fafc;
+          transition: all 0.2s;
+          font-family: inherit;
+        }
+        .service-search-input:focus {
+          border-color: #3b82f6;
+          background: white;
+          box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .categories-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 32px;
+        }
+        .category-section {
+          margin-bottom: 0;
+        }
+        .category-head {
+          margin-bottom: 20px;
+          border-left: 4px solid #2563eb;
+          padding-left: 15px;
+        }
+        .category-title {
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0;
+        }
+        .category-description {
+          margin: 5px 0 0;
+          color: #64748b;
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+
+        .services-list-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 20px;
+        }
+        .service-card-item {
+          background: white;
+          border-radius: 20px;
+          padding: 25px;
+          border: 1px solid #e2e8f0;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+        .service-card-item:hover {
+          transform: translateY(-5px);
+          border-color: #2563eb;
+          box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1);
+        }
+        .service-card-item:hover .svc-apply-btn {
+          background: #2563eb;
+          color: white;
+          border-color: #2563eb;
+        }
+        
+        .svc-icon-box {
+          width: 50px;
+          height: 50px;
+          background: #f8fafc;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 15px;
+          border: 1px solid #f1f5f9;
+        }
+        .svc-icon-box :global(svg) {
+          width: 24px;
+          height: 24px;
+        }
+        
+        .svc-details {
+          flex: 1;
+        }
+        .svc-title {
+          font-size: 1.05rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0 0 10px;
+          line-height: 1.3;
+        }
+        .svc-purpose, .svc-who {
+          font-size: 0.8rem;
+          margin: 0 0 5px;
+          color: #64748b;
+        }
+        .svc-purpose strong, .svc-who strong {
+          color: #475569;
+          font-weight: 700;
+        }
+        
+        .svc-apply-btn {
+          margin-top: 20px;
+          width: 100%;
+          padding: 10px;
+          border-radius: 10px;
+          border: 1.5px solid #e2e8f0;
+          background: #f8fafc;
+          color: #475569;
+          font-weight: 700;
+          font-size: 0.85rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: all 0.2s;
+          cursor: pointer;
+          font-family: inherit;
+        }
+
         @media (max-width: 1400px) {
           .hub-layout-v3 { grid-template-columns: 1fr; }
           .hub-side-v3 { display: grid; grid-template-columns: 1fr 1fr; }
           .company-grid-v3 { grid-template-columns: 1fr; }
+          .portfolio-header-section {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .search-bar-container {
+            max-width: 100%;
+          }
         }
       `}</style>
     </div>

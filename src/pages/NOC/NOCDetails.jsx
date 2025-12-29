@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import DigitalCertificate from './DigitalCertificate';
+import CGWACertificate from './CGWACertificate';
 
 const NOCDetails = ({ onBack }) => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -28,45 +28,43 @@ const NOCDetails = ({ onBack }) => {
     ];
 
     const nocData = {
-        master: {
-            authority: 'Central Ground Water Authority (CGWA)',
-            ministry: 'Ministry of Jal Shakti',
-            dept: 'Department of Water Resources, River Development & Ganga Rejuvenation',
-            certType: 'No Objection Certificate (NOC)',
-            purpose: 'Ground Water Abstraction',
-            nocNo: 'NOC/IND/RJ/2025/8896-REV-2',
-            appNo: 'IND/RJ/2025/8896-REV-2',
-            issueDate: '19-12-2025',
-            nocType: 'New',
-            appType: 'Industry',
-            projectStatus: 'Existing Project',
-            validFrom: '26-12-2024',
-            validTo: '25-12-2026',
-            areaType: 'Over Exploited (GWRE-2024)',
-            waterQuality: 'Fresh Water'
-        },
+        // NOC Basic Info
+        nocNumber: 'NOC/IND/RJ/2025/8896-REV-2/N',
+        applicationNumber: 'IND/RJ/2025/8896-REV-2',
+        issueDate: '2025-12-19',
+        applicationType: 'Industry',
+        projectStatus: 'Existing Project',
+        nocType: 'New',
+        validFrom: '2024-12-26',
+        validTo: '2026-12-25',
+        waterQuality: 'Fresh Water',
+        areaCategory: 'Over Exploited (GWRE - 2024)',
+        
+        // Project Details
         project: {
-            name: 'Jodhpur RBU Infrabuild Private Limited',
-            address: 'Khasra No. 165/317/566, Village Bhoo',
-            tehsil: 'Jaisalmer',
-            district: 'Jaisalmer',
-            state: 'Rajasthan',
-            pin: '345001',
-            town: 'Jaisalmer',
-            comAddress: 'H.No. 7, Housing Board Colony, Ganpati Enclave, Jharsa Road, New Civil Lines',
-            cgwbOffice: '6-A, Jhalana Doongri, Jaipur – 302004, Rajasthan'
+            name: 'JODHPUR RBU INFRABUILD PRIVATE LIMITED',
+            address: 'KHASRA NO 165/317/566,VILLAGE-BHOO,TEHSIL-JAISALMER,DISTRICT JAISALMER',
+            pinCode: '345001',
+            state: 'RAJASTHAN',
+            district: 'JAISALMER',
+            block: 'JAISALMER',
+            communicationAddress: 'H.NO 7, HOUSING BOAD COLONY, GANPATI ENCLAVE JHARSA ROAD ,NEW CIVIL LINES'
         },
+        
+        // Regional Office
+        regionalOffice: '6-A, Jhalana Doongri, Jaipur 302004, Rajasthan.',
+        
+        // Abstraction Details
         abstraction: {
-            groundwater: { daily: 33.35, annual: 9371.35 },
-            dewatering: { daily: 0.00, annual: 0.00 },
-            total: { daily: 33.35, annual: 9371.35 }
+            groundwater: { daily: '33.35', annual: '9371.35' },
+            dewatering: { daily: '0.00', annual: '0.00' },
+            total: { daily: '33.35', annual: '9371.35' }
         },
+        
+        // Structures
         structures: {
-            dw: { exist: 0, prop: 0, total: 0 },
-            dcb: { exist: 0, prop: 0, total: 0 },
-            bw: { exist: 1, prop: 1, total: 2 },
-            tw: { exist: 0, prop: 0, total: 0 },
-            pumps: { exist: 0, prop: 0, total: 0 }
+            existing: { dw: 0, dcb: 0, bw: 1, tw: 0, pu: 0 },
+            proposed: { dw: 0, dcb: 0, bw: 1, tw: 0, pu: 0 }
         }
     };
 
@@ -370,7 +368,7 @@ const NOCDetails = ({ onBack }) => {
             {/* Hidden Certificate Container for PDF Generation */}
             <div style={{ position: 'absolute', top: -9999, left: -9999, visibility: 'hidden' }}>
                 <div style={{ width: '210mm', height: 'auto', display: 'block', visibility: 'visible' }}>
-                    <DigitalCertificate ref={certRef} data={nocData} />
+                    <CGWACertificate ref={certRef} data={nocData} />
                 </div>
             </div>
 

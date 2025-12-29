@@ -1,0 +1,127 @@
+[
+  {
+    "id": 1,
+    "question": "Is NOC required for borewell?",
+    "keywords": ["noc", "required", "borewell", "permission", "need"],
+    "intent": "eligibility",
+    "answer": "NOC is required if:\n\n✔ Your area is classified as Notified / Semi-Critical / Critical / Over-Exploited\n✔ You are using water for Commercial / Industrial purposes\n✔ You are drilling a new borewell\n✔ Your abstraction exceeds the exempted limit\n\nWould you like me to check eligibility for your specific location?",
+    "workflow": "eligibility",
+    "buttons": [
+      { "text": "Check Eligibility Now", "value": "check-eligibility" }
+    ]
+  },
+  {
+    "id": 2,
+    "question": "How to apply for NOC?",
+    "keywords": ["apply", "noc", "application", "how", "process"],
+    "intent": "noc",
+    "answer": "I can guide you through the complete NOC application process step-by-step. The process includes:\n\n1. Purpose selection\n2. Location validation\n3. Water source details\n4. Requirement calculation\n5. Document upload\n6. Fee payment\n7. Submission\n\nWould you like to start the application?",
+    "workflow": "noc",
+    "buttons": [
+      { "text": "Start Application", "value": "start-noc" }
+    ]
+  },
+  {
+    "id": 3,
+    "question": "What documents are required for NOC?",
+    "keywords": ["documents", "required", "upload", "papers", "documents needed"],
+    "intent": "noc",
+    "answer": "**Mandatory Documents for NOC Application:**\n\n✔ Land ownership / Lease deed\n✔ Site plan (KML / Geo-tagged)\n✔ Existing well photographs\n✔ Water balance diagram\n✔ Rainwater harvesting plan\n✔ Undertaking affidavit\n✔ MSME certificate (if applicable)\n✔ SPCB Consent (if applicable)\n\n⚠️ Incomplete documents will result in automatic rejection.",
+    "workflow": null,
+    "buttons": []
+  },
+  {
+    "id": 4,
+    "question": "What is the fee for NOC?",
+    "keywords": ["fee", "charges", "cost", "payment", "price", "amount"],
+    "intent": "payment",
+    "answer": "**Fee Structure for Groundwater NOC:**\n\n• **Processing Fee:**\n  - Small (MSME): ₹500\n  - Medium: ₹2,000\n  - Large: ₹5,000\n\n• **Advance Groundwater Charge:** Based on zone classification and quantity\n• **Penalty:** As per violation (if applicable)\n\nWould you like me to calculate your specific charges?",
+    "workflow": "payment",
+    "buttons": [
+      { "text": "Calculate Charges", "value": "calculate" }
+    ]
+  },
+  {
+    "id": 5,
+    "question": "How to check application status?",
+    "keywords": ["status", "track", "check", "application status", "where"],
+    "intent": "status",
+    "answer": "To check your application status, please provide:\n\n• **Application ID** (e.g., RJ-NOC-2024-001)\nOR\n• **Registered Mobile Number**\n\nOnce you provide this, I can show you:\n- Current status\n- Officer remarks\n- Next steps\n- Expected timeline",
+    "workflow": "status",
+    "buttons": []
+  },
+  {
+    "id": 6,
+    "question": "What is semi-critical zone?",
+    "keywords": ["semi-critical", "zone", "critical", "over-exploited", "safe", "classification"],
+    "intent": "general",
+    "answer": "**Zone Classifications:**\n\n• **Safe Zone:** NOC may not be required for small abstractions\n• **Semi-Critical:** NOC REQUIRED with conditions\n• **Critical:** NOC REQUIRED with strict conditions\n• **Over-Exploited:** NOC REQUIRED with very strict conditions and recharge obligations\n\nYour zone classification determines:\n- Eligibility\n- Conditions\n- Charges\n- Compliance requirements",
+    "workflow": null,
+    "buttons": []
+  },
+  {
+    "id": 7,
+    "question": "How to register rig?",
+    "keywords": ["rig", "drilling", "machine", "register", "registration"],
+    "intent": "rig",
+    "answer": "I can help you register your drilling rig. The registration process includes:\n\n1. Rig details (type, model, capacity)\n2. Operator information\n3. Registration certificate\n4. Compliance documents\n\nWould you like to start the rig registration process?",
+    "workflow": "rig",
+    "buttons": [
+      { "text": "Start Rig Registration", "value": "start-rig" }
+    ]
+  },
+  {
+    "id": 8,
+    "question": "Water meter registration",
+    "keywords": ["meter", "water meter", "flow meter", "register meter"],
+    "intent": "meter",
+    "answer": "Water flow meter registration is mandatory for all NOC holders. I can help you:\n\n1. Register your meter\n2. Link meter to your NOC\n3. Verify meter accuracy\n4. Submit meter readings\n\nWould you like to proceed with meter registration?",
+    "workflow": "meter",
+    "buttons": [
+      { "text": "Start Meter Registration", "value": "start-meter" }
+    ]
+  },
+  {
+    "id": 9,
+    "question": "Compliance requirements",
+    "keywords": ["compliance", "monitoring", "requirements", "must", "obligations"],
+    "intent": "compliance",
+    "answer": "**Post-Approval Compliance Requirements:**\n\nAfter NOC approval, you must:\n\n✔ Install Water Flow Meter within 30 days\n✔ Submit monthly abstraction data\n✔ Annual renewal before expiry\n✔ Maintain compliance records\n✔ Follow zone-specific conditions\n\nNon-compliance may result in penalties or NOC cancellation.",
+    "workflow": "compliance",
+    "buttons": [
+      { "text": "Register Meter", "value": "register-meter" },
+      { "text": "Upload Data", "value": "upload-data" },
+      { "text": "Apply Renewal", "value": "renewal" }
+    ]
+  },
+  {
+    "id": 10,
+    "question": "How to calculate water requirement?",
+    "keywords": ["calculate", "water requirement", "how much", "quantity", "need"],
+    "intent": "noc",
+    "answer": "**Water Requirement Calculation:**\n\nAnnual Requirement = Daily Requirement × Working Days\n\nExample:\n- Daily: 50 KL/day\n- Working Days: 300 days/year\n- Annual: 50 × 300 = 15,000 KL/year = 15,000 m³/year\n\nI can help you calculate based on:\n- Process water\n- Domestic use\n- Greenbelt irrigation\n- Other uses",
+    "workflow": null,
+    "buttons": []
+  },
+  {
+    "id": 11,
+    "question": "What happens after submission?",
+    "keywords": ["after", "submission", "what next", "process", "timeline"],
+    "intent": "status",
+    "answer": "**After Submission:**\n\n1. **Application Received** - You'll get an Application ID\n2. **Officer Scrutiny** - 7-15 working days\n3. **Site Inspection** - If required (15-30 days)\n4. **Query/Clarification** - If needed\n5. **Approval/Rejection** - Final decision\n\nTotal timeline: 30-45 working days (varies by category)\n\n⚠️ After submission, editing is NOT allowed.",
+    "workflow": null,
+    "buttons": []
+  },
+  {
+    "id": 12,
+    "question": "Renewal process",
+    "keywords": ["renewal", "renew", "extend", "validity"],
+    "intent": "compliance",
+    "answer": "**NOC Renewal Process:**\n\n1. Apply 30 days before expiry\n2. Submit compliance certificate\n3. Pay renewal fee\n4. Upload updated documents\n5. Officer review\n\nRenewal fee: Same as initial processing fee\n\nWould you like to apply for renewal?",
+    "workflow": "compliance",
+    "buttons": [
+      { "text": "Apply for Renewal", "value": "renewal" }
+    ]
+  }
+]
+

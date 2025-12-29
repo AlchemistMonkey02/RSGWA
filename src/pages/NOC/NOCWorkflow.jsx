@@ -4,9 +4,10 @@ import {
     ArrowRight, ArrowLeft, Building2, Gavel, Search, Download, Plus, Globe,
     LayoutDashboard, Users, Clock, Filter, Eye, MessageSquare, BarChart2,
     Shield, Settings, Activity, MoreVertical, CheckSquare, ClipboardCheck,
-    ArrowUpRight, ArrowDownRight, Lock, Check, RefreshCw, Send, ChevronDown, ChevronRight, ChevronLeft, LogOut, BookOpen, CreditCard, Wallet, FileCheck, Bell
+    ArrowUpRight, ArrowDownRight, Lock, Check, RefreshCw, Send, ChevronDown, ChevronRight, ChevronLeft, LogOut, BookOpen, CreditCard, Wallet, FileCheck, Bell,
+    Shovel, HardHat, GraduationCap, RotateCcw, Gauge, AlertTriangle, Truck, PlusCircle
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // Import sub-pages to integrate into the Hub
 import ApplicationForm from '../ApplicationForm';
@@ -17,19 +18,52 @@ import EAC from '../EAC';
 import Passbook from '../Passbook';
 import PaymentDetails from '../PaymentDetails';
 import Reports from '../Reports';
-import ServicePortfolio from './ServicePortfolio';
 import UnifiedApplicationEngine from './UnifiedApplicationEngine';
 import NOCDetails from './NOCDetails';
 import GISDashboard from './GISDashboard';
 
 
 const NOCWorkflow = ({ activeCompany, setActiveCompany, userCompanies = [], setUserCompanies }) => {
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [role, setRole] = useState('applicant'); // 'applicant' | 'officer'
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [step, setStep] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
     const [selectedService, setSelectedService] = useState(null);
+    const [serviceSearchQuery, setServiceSearchQuery] = useState('');
+
+    // Service to Route Mapping
+    const getServiceRoute = (serviceId) => {
+        const routeMap = {
+            // Regulatory NOC Services
+            'abstraction-industry': '/noc-portal',
+            'abstraction-mining': '/noc-portal',
+            'abstraction-infra': '/noc-portal',
+            'abstraction-commercial': '/noc-portal',
+            
+            // Drilling & Infrastructure
+            'rig-registration': '/rig-registration',
+            'drilling-permission': '/borewell-drilling-permission',
+            'well-conversion': '/well-conversion',
+            
+            // Compliance & Monitoring
+            'noc-renewal': '/renewal',
+            'compliance-reporting': '/compliance',
+            'meter-installation': '/meter-registration-system',
+            
+            // Enforcement & Legal
+            'ec-orders': '/eac',
+            'violation-regularization': '/violation-regularization',
+            
+            // Special Permissions
+            'emergency-noc': '/emergency-noc',
+            'tanker-noc': '/tanker-transport-noc'
+        };
+        
+        return routeMap[serviceId] || '/noc-portal'; // Default to noc-portal
+    };
 
     // Mock Form Data
     const [formData, setFormData] = useState({
@@ -41,6 +75,78 @@ const NOCWorkflow = ({ activeCompany, setActiveCompany, userCompanies = [], setU
         waterReq: '45.5',
         purpose: 'Industrial'
     });
+
+    // Service categories definition (shared for URL parameter handling and ApplicantDashboard)
+    const serviceCategories = [
+        {
+            title: "Regulatory NOC Services",
+            description: "Statutory permissions required before starting abstraction",
+            services: [
+                { id: 'abstraction-industry', title: "Groundwater Abstraction - Industry", icon: <Building2 className="text-blue-500" />, purpose: "Industrial process water", who: "Factories, Manufacturing Units" },
+                { id: 'abstraction-mining', title: "Groundwater Abstraction - Mining", icon: <Shovel className="text-amber-600" />, purpose: "Dewatering & processing", who: "Mining Lease Holders" },
+                { id: 'abstraction-infra', title: "Infrastructure Projects", icon: <HardHat className="text-orange-500" />, purpose: "Construction & Operation", who: "Roads, Railways, Housing" },
+                { id: 'abstraction-commercial', title: "Commercial / Institutional", icon: <GraduationCap className="text-purple-500" />, purpose: "Occupancy-based demand", who: "Hotels, Hospitals, Schools" },
+            ]
+        },
+        {
+            title: "Drilling & Infrastructure",
+            description: "Permissions for rigs and drilling activity",
+            services: [
+                { id: 'rig-registration', title: "Rig Registration NOC", icon: <RotateCcw className="text-slate-600" />, purpose: "Authorize drilling rigs", who: "Drilling Contractors" },
+                { id: 'drilling-permission', title: "Borewell Drilling Permission", icon: <PlusCircle className="text-emerald-500" />, purpose: "Prior permission to drill", who: "Borewell owners" },
+                { id: 'well-conversion', title: "Well Conversion/Deepening", icon: <ArrowRight className="text-cyan-500" />, purpose: "Shallow to deep conversion", who: "Existing well owners" },
+            ]
+        },
+        {
+            title: "Compliance & Monitoring",
+            description: "Ongoing regulatory requirements",
+            services: [
+                { id: 'noc-renewal', title: "NOC Renewal Service", icon: <RotateCcw className="text-blue-600" />, purpose: "Extend NOC validity", who: "Existing NOC holders" },
+                { id: 'compliance-reporting', title: "Compliance Reporting", icon: <ClipboardCheck className="text-indigo-500" />, purpose: "Data submission", who: "All NOC holders" },
+                { id: 'meter-installation', title: "Meter Validation NOC", icon: <Gauge className="text-rose-500" />, purpose: "Verify meter accuracy", who: "Large abstractors" },
+            ]
+        },
+        {
+            title: "Enforcement & Legal",
+            description: "Violation handling and regularization",
+            services: [
+                { id: 'ec-orders', title: "Penalty & EC Orders", icon: <Gavel className="text-red-600" />, purpose: "Environmental compensation", who: "Violators/Notice seekers" },
+                { id: 'violation-regularization', title: "Violation Regularization", icon: <AlertTriangle className="text-yellow-600" />, purpose: "Amnesty & Legalization", who: "Unauthorized users" },
+            ]
+        },
+        {
+            title: "Special Permissions",
+            description: "Emergency and bulk transportation",
+            services: [
+                { id: 'emergency-noc', title: "Emergency NOC", icon: <AlertTriangle className="text-red-500" />, purpose: "Drought/Emergency use", who: "Critical sector users" },
+                { id: 'tanker-noc', title: "Tanker/Transportation NOC", icon: <Truck className="text-sky-500" />, purpose: "Bulk water supply", who: "Suppliers/Transporters" },
+            ]
+        }
+    ];
+
+    // Handle URL parameter for direct service navigation
+    React.useEffect(() => {
+        const serviceId = searchParams.get('service');
+        if (serviceId) {
+            // Find the service from all categories
+            let foundService = null;
+            for (const category of serviceCategories) {
+                foundService = category.services.find(svc => svc.id === serviceId);
+                if (foundService) break;
+            }
+            
+            if (foundService) {
+                setSelectedService(foundService);
+                setActiveMenuItem('new');
+                // Clear the URL parameter after using it to prevent re-triggering
+                const newSearchParams = new URLSearchParams(searchParams);
+                newSearchParams.delete('service');
+                setSearchParams(newSearchParams, { replace: true });
+            }
+        }
+        // serviceCategories is effectively constant (same structure on every render)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     // Handle context switching
     React.useEffect(() => {
@@ -57,8 +163,6 @@ const NOCWorkflow = ({ activeCompany, setActiveCompany, userCompanies = [], setU
 
     const applicantItems = [
         { id: 'dashboard', label: 'My NOC Portfolio', icon: <LayoutDashboard size={18} /> },
-        { id: 'services', label: 'Services Portfolio', icon: <Globe size={18} /> },
-        { id: 'new', label: 'Apply New NOC', icon: <Plus size={18} /> },
         { id: 'vault', label: 'Digital Vault', icon: <Shield size={18} /> },
         { id: 'passbook', label: 'Application Passbook', icon: <FileText size={18} /> },
         { id: 'gis', label: 'GIS Platform', icon: <Globe size={18} /> },
@@ -374,7 +478,18 @@ const NOCWorkflow = ({ activeCompany, setActiveCompany, userCompanies = [], setU
 
     // Unified Financial Ledger handled by Passbook component
 
-    const ApplicantDashboard = () => (
+    const ApplicantDashboard = () => {
+        // Filter services based on search query
+        const filteredCategories = serviceCategories.map(cat => ({
+            ...cat,
+            services: cat.services.filter(svc => 
+                svc.title.toLowerCase().includes(serviceSearchQuery.toLowerCase()) ||
+                svc.purpose.toLowerCase().includes(serviceSearchQuery.toLowerCase()) ||
+                svc.who.toLowerCase().includes(serviceSearchQuery.toLowerCase())
+            )
+        })).filter(cat => cat.services.length > 0);
+
+        return (
         <div className="applicant-dashboard animated">
             <div className="dash-header flex justify-between items-center mb-6">
                 <div>
@@ -449,6 +564,68 @@ const NOCWorkflow = ({ activeCompany, setActiveCompany, userCompanies = [], setU
                     </div>
                 </div>
             )}
+
+            {/* Master Services Portfolio Section */}
+            <div className="services-portfolio-section glass-panel p-8 mb-8">
+                <div className="portfolio-header-section mb-6">
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">Master Services Portfolio</h2>
+                        <p className="text-slate-500 font-medium">Unified Ground Water Regulatory Platform • Rajasthan State</p>
+                    </div>
+                    <div className="search-bar-container">
+                        <Search size={18} className="search-icon" />
+                        <input 
+                            type="text" 
+                            placeholder="Search for a service (e.g. Mining, Rig, Renewal)..." 
+                            value={serviceSearchQuery}
+                            onChange={(e) => setServiceSearchQuery(e.target.value)}
+                            className="service-search-input"
+                        />
+                    </div>
+                </div>
+
+                <div className="categories-grid">
+                    {filteredCategories.map((cat, idx) => (
+                        <div key={idx} className="category-section">
+                            <div className="category-head">
+                                <h3 className="category-title">{cat.title}</h3>
+                                <p className="category-description">{cat.description}</p>
+                            </div>
+                            <div className="services-list">
+                                {cat.services.map((svc) => (
+                                    <div 
+                                        key={svc.id} 
+                                        className="service-card" 
+                                        onClick={() => {
+                                            const route = getServiceRoute(svc.id);
+                                            // If route is /noc-portal and we're already here, use the application engine
+                                            // Otherwise, navigate to the specific route
+                                            if (route === '/noc-portal') {
+                                                setSelectedService(svc);
+                                                setActiveMenuItem('new');
+                                            } else {
+                                                navigate(route);
+                                            }
+                                        }}
+                                    >
+                                        <div className="svc-icon-box">
+                                            {svc.icon}
+                                        </div>
+                                        <div className="svc-details">
+                                            <h4 className="svc-title">{svc.title}</h4>
+                                            <p className="svc-purpose"><strong>Purpose:</strong> {svc.purpose}</p>
+                                            <p className="svc-who"><strong>Who Applies:</strong> {svc.who}</p>
+                                        </div>
+                                        <button className="svc-apply-btn">
+                                            Apply <ArrowRight size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             <div className="glass-panel p-8 mt-4">
                 <div className="flex justify-between items-center mb-6">
@@ -541,9 +718,155 @@ const NOCWorkflow = ({ activeCompany, setActiveCompany, userCompanies = [], setU
                     backdrop-filter: blur(4px);
                     border: 1px solid rgba(255,255,255,0.6);
                 }
+
+                /* Services Portfolio Styles */
+                .services-portfolio-section {
+                    margin-bottom: 32px;
+                }
+                .portfolio-header-section {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                }
+                .search-bar-container {
+                    position: relative;
+                    width: 400px;
+                }
+                .search-bar-container .search-icon {
+                    position: absolute;
+                    left: 15px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #94a3b8;
+                    z-index: 1;
+                }
+                .service-search-input {
+                    width: 100%;
+                    padding: 14px 15px 14px 45px;
+                    border-radius: 12px;
+                    border: 1.5px solid #e2e8f0;
+                    outline: none;
+                    font-size: 0.95rem;
+                    background: #f8fafc;
+                    transition: all 0.2s;
+                }
+                .service-search-input:focus {
+                    border-color: #2563eb;
+                    background: white;
+                    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+                }
+
+                .categories-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 32px;
+                }
+                .category-section {
+                    margin-bottom: 0;
+                }
+                .category-head {
+                    margin-bottom: 20px;
+                    border-left: 4px solid #2563eb;
+                    padding-left: 15px;
+                }
+                .category-title {
+                    font-size: 1.25rem;
+                    font-weight: 800;
+                    color: #0f172a;
+                    margin: 0;
+                }
+                .category-description {
+                    margin: 5px 0 0;
+                    color: #64748b;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                }
+
+                .services-list {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                    gap: 20px;
+                }
+                .service-card {
+                    background: white;
+                    border-radius: 20px;
+                    padding: 25px;
+                    border: 1px solid #e2e8f0;
+                    cursor: pointer;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .service-card:hover {
+                    transform: translateY(-5px);
+                    border-color: #2563eb;
+                    box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1);
+                }
+                .service-card:hover .svc-apply-btn {
+                    background: #2563eb;
+                    color: white;
+                    border-color: #2563eb;
+                }
+                
+                .svc-icon-box {
+                    width: 50px;
+                    height: 50px;
+                    background: #f8fafc;
+                    border-radius: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 15px;
+                    border: 1px solid #f1f5f9;
+                }
+                .svc-icon-box :global(svg) {
+                    width: 24px;
+                    height: 24px;
+                }
+                
+                .svc-details {
+                    flex: 1;
+                }
+                .svc-title {
+                    font-size: 1.05rem;
+                    font-weight: 800;
+                    color: #0f172a;
+                    margin: 0 0 10px;
+                    line-height: 1.3;
+                }
+                .svc-purpose, .svc-who {
+                    font-size: 0.8rem;
+                    margin: 0 0 5px;
+                    color: #64748b;
+                }
+                .svc-purpose strong, .svc-who strong {
+                    color: #475569;
+                    font-weight: 700;
+                }
+                
+                .svc-apply-btn {
+                    margin-top: 20px;
+                    width: 100%;
+                    padding: 10px;
+                    border-radius: 10px;
+                    border: 1.5px solid #e2e8f0;
+                    background: #f8fafc;
+                    color: #475569;
+                    font-weight: 700;
+                    font-size: 0.85rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    transition: all 0.2s;
+                    cursor: pointer;
+                }
             `}</style>
         </div>
-    );
+        );
+    };
 
     // Obsolete WizardStep removed in favor of UnifiedApplicationEngine
 
@@ -1150,8 +1473,6 @@ const NOCWorkflow = ({ activeCompany, setActiveCompany, userCompanies = [], setU
         </div>
     );
 
-    const navigate = useNavigate();
-
     const handleLogout = () => {
         if (confirm('Are you sure you want to logout?')) {
             navigate('/');
@@ -1291,14 +1612,6 @@ const NOCWorkflow = ({ activeCompany, setActiveCompany, userCompanies = [], setU
                         ) : (
                             <>
                                 {activeMenuItem === 'dashboard' && <ApplicantDashboard />}
-                                {activeMenuItem === 'services' && (
-                                    <ServicePortfolio
-                                        onApply={(svc) => {
-                                            setSelectedService(svc);
-                                            setActiveMenuItem('new');
-                                        }}
-                                    />
-                                )}
                                 {activeMenuItem === 'new' && (
                                     <UnifiedApplicationEngine
                                         activeCompany={activeCompany}

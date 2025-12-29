@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import Chatbot from '../../pages/Chatbot/Chatbot';
 
 const PortalLayout = ({ children, userRole, setUserRole }) => {
   return (
@@ -12,6 +13,7 @@ const PortalLayout = ({ children, userRole, setUserRole }) => {
           {children}
         </main>
       </div>
+      <Chatbot />
 
       <style jsx>{`
         .layout {

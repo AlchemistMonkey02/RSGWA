@@ -3,22 +3,49 @@ import {
     ArrowLeft, ArrowRight, CheckCircle, UploadCloud,
     MapPin, Droplets, Building2, ClipboardCheck,
     ShieldCheck, HelpCircle, HardHat, Shovel,
-    RotateCcw, Info, Wallet
+    RotateCcw, Info, Wallet, FileText, AlertCircle
 } from 'lucide-react';
 
 const UnifiedApplicationEngine = ({ selectedService, onCancel, onComplete, activeCompany }) => {
     const [currentStep, setCurrentStep] = useState(1);
+    const [uploadedDocs, setUploadedDocs] = useState({});
 
     // Safety check to prevent crash if service is not yet selected
     if (!selectedService) return null;
 
+    // NOC Document Requirements (matching chatbot)
+    const nocDocuments = [
+        { id: 'land-ownership', name: 'Land Ownership / Lease Deed', required: true, format: 'PDF', maxSize: '5 MB', description: 'Proof of land ownership or valid lease agreement' },
+        { id: 'site-plan', name: 'Site Plan (KML / Geo-tagged)', required: true, format: 'KML/PDF', maxSize: '10 MB', description: 'Geo-tagged site plan with coordinates' },
+        { id: 'well-photos', name: 'Existing Well Photographs', required: true, format: 'JPG/PNG', maxSize: '2 MB each', description: 'Clear photographs of existing wells' },
+        { id: 'water-balance', name: 'Water Balance Diagram', required: true, format: 'PDF', maxSize: '5 MB', description: 'Detailed water balance calculation' },
+        { id: 'rwh-plan', name: 'Rainwater Harvesting Plan', required: true, format: 'PDF', maxSize: '5 MB', description: 'RWH implementation plan' },
+        { id: 'undertaking', name: 'Undertaking Affidavit', required: true, format: 'PDF', maxSize: '2 MB', description: 'Notarized undertaking affidavit' },
+        { id: 'msme-cert', name: 'MSME Certificate', required: false, format: 'PDF', maxSize: '2 MB', description: 'If applicable', note: 'If applicable' },
+        { id: 'spcb-consent', name: 'SPCB Consent', required: false, format: 'PDF', maxSize: '5 MB', description: 'State Pollution Control Board consent', note: 'If applicable' },
+        { id: 'hydro-report', name: 'Hydrogeological Report', required: true, format: 'PDF', maxSize: '10 MB', description: 'Detailed hydrogeological study report' },
+        { id: 'bharat-kosh', name: 'Bharat Kosh Receipt', required: false, format: 'PDF', maxSize: '2 MB', description: 'Payment receipt', note: 'After payment' }
+    ];
+
     const [formData, setFormData] = useState({
         // Common Base Data
         companyName: activeCompany?.name || '',
+        projectName: activeCompany?.name || '',
         district: 'Jaipur',
         block: 'Phagi',
         zone: activeCompany?.zone || 'Safe',
-
+        state: 'Rajasthan',
+        village: '',
+        tehsil: '',
+        pinCode: '',
+        khasraNumber: '',
+        communicationAddress: '',
+        
+        // Project Details
+        projectStatus: 'Existing Project', // Existing Project / Proposed Project
+        applicationType: 'Industry', // Industry / Mining / Infrastructure / Commercial
+        waterQualityType: 'Fresh Water', // Fresh Water / Saline Water
+        
         // Service Specific (Dynamic)
         landOwnership: '',
         latitude: '',
@@ -31,6 +58,24 @@ const UnifiedApplicationEngine = ({ selectedService, onCancel, onComplete, activ
         pitDepth: '', // Mining specific
         dewateringQty: '', // Mining specific
         projectPhase: 'Construction', // Infra specific
+        
+        // Abstraction Details
+        groundwaterDaily: '',
+        groundwaterAnnual: '',
+        dewateringDaily: '0.00',
+        dewateringAnnual: '0.00',
+        
+        // Structures
+        existingDW: 0,
+        existingDCB: 0,
+        existingBW: 0,
+        existingTW: 0,
+        existingPu: 0,
+        proposedDW: 0,
+        proposedDCB: 0,
+        proposedBW: 0,
+        proposedTW: 0,
+        proposedPu: 0,
 
         // Rig Specific
         rigType: 'Direct Rotary',
@@ -73,11 +118,24 @@ const UnifiedApplicationEngine = ({ selectedService, onCancel, onComplete, activ
         setFormData(prev => {
             const updated = { ...prev, [name]: newVal };
 
-            // Auto-GIS Logic: Derive zone from block
-            if (name === 'block') {
+            // Auto-GIS Logic: Derive zone from block/tehsil
+            if (name === 'block' || name === 'tehsil') {
                 if (value === 'Indergarh') updated.zone = 'Semi-Critical';
                 else if (value === 'Bhiwadi') updated.zone = 'Over-Exploited';
                 else updated.zone = 'Safe';
+            }
+
+            // Auto-calculate annual from daily (assuming 300 working days)
+            if (name === 'groundwaterDaily') {
+                const daily = parseFloat(value) || 0;
+                const workingDays = 300;
+                updated.groundwaterAnnual = (daily * workingDays).toFixed(2);
+            }
+
+            if (name === 'dewateringDaily') {
+                const daily = parseFloat(value) || 0;
+                const workingDays = 300;
+                updated.dewateringAnnual = (daily * workingDays).toFixed(2);
             }
 
             return updated;
@@ -113,14 +171,67 @@ const UnifiedApplicationEngine = ({ selectedService, onCancel, onComplete, activ
                             </div>
                         </div>
                         <div className="form-grid">
-                            <div className="field">
-                                <label>Acting Entity</label>
-                                <input type="text" value={formData.companyName} disabled className="bg-light" />
+                            <div className="field full">
+                                <label>Project Name *</label>
+                                <input type="text" name="projectName" value={formData.projectName} onChange={handleInputChange} placeholder="Enter project/company name" required />
                             </div>
                             <div className="field">
-                                <label>District</label>
-                                <select name="district" value={formData.district} onChange={handleInputChange}>
-                                    <option>Jaipur</option><option>Alwar</option><option>Bhiwadi</option>
+                                <label>State *</label>
+                                <input type="text" name="state" value={formData.state} onChange={handleInputChange} required />
+                            </div>
+                            <div className="field">
+                                <label>District *</label>
+                                <select name="district" value={formData.district} onChange={handleInputChange} required>
+                                    <option>Jaipur</option><option>Jaisalmer</option><option>Jodhpur</option><option>Udaipur</option><option>Bikaner</option><option>Alwar</option><option>Bhiwadi</option>
+                                </select>
+                            </div>
+                            <div className="field">
+                                <label>Tehsil / Block *</label>
+                                <input type="text" name="tehsil" value={formData.tehsil || formData.block} onChange={handleInputChange} placeholder="Enter Tehsil/Block" required />
+                            </div>
+                            <div className="field">
+                                <label>Village / Ward *</label>
+                                <input type="text" name="village" value={formData.village} onChange={handleInputChange} placeholder="Enter Village/Ward" required />
+                            </div>
+                            <div className="field">
+                                <label>Khasra Number *</label>
+                                <input type="text" name="khasraNumber" value={formData.khasraNumber} onChange={handleInputChange} placeholder="e.g., 165/317/566" required />
+                            </div>
+                            <div className="field">
+                                <label>PIN Code *</label>
+                                <input type="text" name="pinCode" value={formData.pinCode} onChange={handleInputChange} placeholder="e.g., 345001" maxLength="6" required />
+                            </div>
+                            <div className="field full">
+                                <label>Project Address *</label>
+                                <textarea name="projectAddress" value={`${formData.khasraNumber ? 'KHASRA NO ' + formData.khasraNumber + ', ' : ''}VILLAGE-${formData.village || ''},TEHSIL-${formData.tehsil || formData.block || ''},DISTRICT ${formData.district || ''}`} onChange={handleInputChange} placeholder="Complete project address" required />
+                            </div>
+                            <div className="field full">
+                                <label>Communication Address *</label>
+                                <textarea name="communicationAddress" value={formData.communicationAddress} onChange={handleInputChange} placeholder="Complete communication address" required />
+                            </div>
+                            <div className="field">
+                                <label>Project Status *</label>
+                                <select name="projectStatus" value={formData.projectStatus} onChange={handleInputChange} required>
+                                    <option>Existing Project</option>
+                                    <option>Proposed Project</option>
+                                </select>
+                            </div>
+                            <div className="field">
+                                <label>Application Type *</label>
+                                <select name="applicationType" value={formData.applicationType} onChange={handleInputChange} required>
+                                    <option>Industry</option>
+                                    <option>Mining</option>
+                                    <option>Infrastructure</option>
+                                    <option>Commercial</option>
+                                    <option>Drinking Water Supply</option>
+                                    <option>Packaged Drinking Water</option>
+                                </select>
+                            </div>
+                            <div className="field">
+                                <label>Water Quality Type *</label>
+                                <select name="waterQualityType" value={formData.waterQualityType} onChange={handleInputChange} required>
+                                    <option>Fresh Water</option>
+                                    <option>Saline Water</option>
                                 </select>
                             </div>
                             <div className="field">
@@ -128,10 +239,12 @@ const UnifiedApplicationEngine = ({ selectedService, onCancel, onComplete, activ
                                 <div className={`zone-pill ${formData.zone.toLowerCase()}`}>{formData.zone} Category Block</div>
                             </div>
                             <div className="field">
-                                <label>Block / Tehsil</label>
-                                <select name="block" value={formData.block} onChange={handleInputChange}>
-                                    <option>Phagi</option><option>Indergarh</option><option>Keshoraipatan</option><option>Bhiwadi</option>
-                                </select>
+                                <label>Latitude *</label>
+                                <input type="text" name="latitude" value={formData.latitude} onChange={handleInputChange} placeholder="e.g., 25.730000" required />
+                            </div>
+                            <div className="field">
+                                <label>Longitude *</label>
+                                <input type="text" name="longitude" value={formData.longitude} onChange={handleInputChange} placeholder="e.g., 76.180000" required />
                             </div>
                         </div>
                     </div>
@@ -186,6 +299,90 @@ const UnifiedApplicationEngine = ({ selectedService, onCancel, onComplete, activ
                                     <div className="field">
                                         <label>Treated water reuse (KLD)</label>
                                         <input type="number" name="recycledWater" onChange={handleInputChange} />
+                                    </div>
+                                </>
+                            )}
+                            
+                            {/* Abstraction Details - Required for all NOC applications */}
+                            {(serviceType === 'industrial' || serviceType === 'regulatory') && (
+                                <>
+                                    <div className="field full" style={{ gridColumn: 'span 2', marginTop: '20px', paddingTop: '20px', borderTop: '2px solid #e2e8f0' }}>
+                                        <label style={{ fontSize: '14px', fontWeight: '700', marginBottom: '12px' }}>Ground Water Abstraction Details *</label>
+                                    </div>
+                                    <div className="field">
+                                        <label>Groundwater Abstraction (m³/day) *</label>
+                                        <input type="number" step="0.01" name="groundwaterDaily" value={formData.groundwaterDaily} onChange={handleInputChange} placeholder="e.g., 33.35" required />
+                                    </div>
+                                    <div className="field">
+                                        <label>Groundwater Abstraction (m³/year) *</label>
+                                        <input type="number" step="0.01" name="groundwaterAnnual" value={formData.groundwaterAnnual} onChange={handleInputChange} placeholder="Auto-calculated" required />
+                                    </div>
+                                    <div className="field">
+                                        <label>Dewatering (m³/day)</label>
+                                        <input type="number" step="0.01" name="dewateringDaily" value={formData.dewateringDaily} onChange={handleInputChange} placeholder="0.00" />
+                                    </div>
+                                    <div className="field">
+                                        <label>Dewatering (m³/year)</label>
+                                        <input type="number" step="0.01" name="dewateringAnnual" value={formData.dewateringAnnual} onChange={handleInputChange} placeholder="0.00" />
+                                    </div>
+                                    
+                                    <div className="field full" style={{ gridColumn: 'span 2', marginTop: '20px', paddingTop: '20px', borderTop: '2px solid #e2e8f0' }}>
+                                        <label style={{ fontSize: '14px', fontWeight: '700', marginBottom: '12px' }}>Abstraction Structures Details *</label>
+                                        <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>
+                                            DW-Dug Well; DCB-Dug-cum-Bore Well; BW-Bore Well; TW-Tube Well; Pu-Pumps
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="field full" style={{ gridColumn: 'span 2' }}>
+                                        <label style={{ marginBottom: '12px', fontWeight: '600' }}>Existing Structures</label>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>DW</label>
+                                                <input type="number" name="existingDW" value={formData.existingDW} onChange={handleInputChange} min="0" />
+                                            </div>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>DCB</label>
+                                                <input type="number" name="existingDCB" value={formData.existingDCB} onChange={handleInputChange} min="0" />
+                                            </div>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>BW</label>
+                                                <input type="number" name="existingBW" value={formData.existingBW} onChange={handleInputChange} min="0" />
+                                            </div>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>TW</label>
+                                                <input type="number" name="existingTW" value={formData.existingTW} onChange={handleInputChange} min="0" />
+                                            </div>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>Pu</label>
+                                                <input type="number" name="existingPu" value={formData.existingPu} onChange={handleInputChange} min="0" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="field full" style={{ gridColumn: 'span 2' }}>
+                                        <label style={{ marginBottom: '12px', fontWeight: '600' }}>Proposed Structures</label>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>DW</label>
+                                                <input type="number" name="proposedDW" value={formData.proposedDW} onChange={handleInputChange} min="0" />
+                                            </div>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>DCB</label>
+                                                <input type="number" name="proposedDCB" value={formData.proposedDCB} onChange={handleInputChange} min="0" />
+                                            </div>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>BW</label>
+                                                <input type="number" name="proposedBW" value={formData.proposedBW} onChange={handleInputChange} min="0" />
+                                            </div>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>TW</label>
+                                                <input type="number" name="proposedTW" value={formData.proposedTW} onChange={handleInputChange} min="0" />
+                                            </div>
+                                            <div className="field">
+                                                <label style={{ fontSize: '11px' }}>Pu</label>
+                                                <input type="number" name="proposedPu" value={formData.proposedPu} onChange={handleInputChange} min="0" />
+                                            </div>
+                                        </div>
                                     </div>
                                 </>
                             )}
@@ -258,61 +455,85 @@ const UnifiedApplicationEngine = ({ selectedService, onCancel, onComplete, activ
                             </div>
                         </div>
 
+                        <div className="documents-info-box" style={{ background: '#eff6ff', border: '1.5px solid #3b82f6', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                <Info size={20} style={{ color: '#3b82f6' }} />
+                                <strong style={{ color: '#1e40af' }}>Required Documents Checklist</strong>
+                            </div>
+                            <p style={{ fontSize: '13px', color: '#475569', margin: 0 }}>
+                                Please upload all mandatory documents. Incomplete documents will result in automatic rejection.
+                            </p>
+                        </div>
+
                         <div className="upload-section">
-                            <div className="upload-item">
-                                <div className="u-icon"><ShieldCheck size={18} /></div>
-                                <div className="u-info">
-                                    <strong>Statutory Authorization</strong>
-                                    <p>Consent to Establish / Mining Lease / RIICO Allotment</p>
-                                </div>
-                                <button className="btn-upload">Upload PDF</button>
-                            </div>
-
-                            {(parseInt(formData.industrialWater) + parseInt(formData.domesticWater) > 500) && (
-                                <div className="upload-item" style={{ border: '1.5px solid #f97316', background: '#fff7ed' }}>
-                                    <div className="u-icon" style={{ color: '#f97316' }}><ClipboardCheck size={18} /></div>
-                                    <div className="u-info">
-                                        <strong>Hydrogeological Report</strong>
-                                        <p>Mandatory for abstraction &gt; 500 m³/day (Rekart Threshold)</p>
+                            {nocDocuments.map((doc, idx) => (
+                                <div 
+                                    key={doc.id} 
+                                    className="upload-item"
+                                    style={{ 
+                                        border: doc.required ? '1.5px solid #ef4444' : '1.5px solid #3b82f6',
+                                        background: doc.required ? '#fef2f2' : '#eff6ff'
+                                    }}
+                                >
+                                    <div className="u-icon" style={{ color: doc.required ? '#ef4444' : '#3b82f6' }}>
+                                        {doc.required ? <AlertCircle size={18} /> : <FileText size={18} />}
                                     </div>
-                                    <button className="btn-upload" style={{ color: '#f97316', borderColor: '#f97316' }}>Upload PDF</button>
-                                </div>
-                            )}
-
-                            <div className="upload-item">
-                                <div className="u-icon"><MapPin size={18} /></div>
-                                <div className="u-info">
-                                    <strong>Site Layout & Location</strong>
-                                    <p>GIS validated site plan with block markers</p>
-                                </div>
-                                <button className="btn-upload">Upload JPEG/PDF</button>
-                            </div>
-
-                            {/* Mandatory for Accumax Devices */}
-                            {(formData.selectedDevice === 'M-ACC-EMF' || formData.selectedDevice === 'M-ACC-DWLR') && (
-                                <>
-                                    <div className="upload-item" style={{ border: '1.5px solid #3b82f6', background: '#eff6ff' }}>
-                                        <div className="u-icon" style={{ color: '#3b82f6' }}><Shield size={18} /></div>
-                                        <div className="u-info">
-                                            <strong>NABL Calibration Certificate</strong>
-                                            <p>Mandatory for CGWA Compliance (Accumax Series)</p>
+                                    <div className="u-info" style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                            <strong>{doc.name}</strong>
+                                            {doc.required ? (
+                                                <span style={{ background: '#fee2e2', color: '#dc2626', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: '700' }}>REQUIRED</span>
+                                            ) : (
+                                                <span style={{ background: '#dbeafe', color: '#2563eb', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: '700' }}>OPTIONAL</span>
+                                            )}
                                         </div>
-                                        <button className="btn-upload" style={{ color: '#3b82f6', borderColor: '#3b82f6' }}>Upload PDF</button>
+                                        <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0' }}>{doc.description}</p>
+                                        <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                                            <span>Format: <strong>{doc.format}</strong></span>
+                                            <span>Max Size: <strong>{doc.maxSize}</strong></span>
+                                            {doc.note && <span style={{ fontStyle: 'italic' }}>{doc.note}</span>}
+                                        </div>
                                     </div>
-                                </>
-                            )}
-
-                            {/* Lifecycle documents */}
-                            {selectedService.id === 'noc-renewal' && (
-                                <div className="upload-item" style={{ border: '1.5px solid #10b981', background: '#ecfdf5' }}>
-                                    <div className="u-icon" style={{ color: '#10b981' }}><ClipboardCheck size={18} /></div>
-                                    <div className="u-info">
-                                        <strong>Cumulative Water Audit Report</strong>
-                                        <p>Mandatory for renewals as per 2023 Guidelines</p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                                        <input 
+                                            type="file" 
+                                            id={`doc-${doc.id}`}
+                                            accept={doc.format.includes('PDF') ? '.pdf' : doc.format.includes('JPG') ? '.jpg,.jpeg,.png' : doc.format.includes('KML') ? '.kml,.kmz,.pdf' : '*'}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setUploadedDocs(prev => ({ ...prev, [doc.id]: file.name }));
+                                                }
+                                            }}
+                                            style={{ display: 'none' }}
+                                        />
+                                        <label 
+                                            htmlFor={`doc-${doc.id}`}
+                                            className="btn-upload"
+                                            style={{ 
+                                                color: doc.required ? '#ef4444' : '#3b82f6', 
+                                                borderColor: doc.required ? '#ef4444' : '#3b82f6',
+                                                cursor: 'pointer',
+                                                margin: 0
+                                            }}
+                                        >
+                                            {uploadedDocs[doc.id] ? (
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <CheckCircle size={14} />
+                                                    Uploaded
+                                                </span>
+                                            ) : (
+                                                'Upload'
+                                            )}
+                                        </label>
+                                        {uploadedDocs[doc.id] && (
+                                            <span style={{ fontSize: '10px', color: '#10b981', fontWeight: '600' }}>
+                                                {uploadedDocs[doc.id]}
+                                            </span>
+                                        )}
                                     </div>
-                                    <button className="btn-upload" style={{ color: '#10b981', borderColor: '#10b981' }}>Upload PDF</button>
                                 </div>
-                            )}
+                            ))}
                         </div>
 
                         <div className="revenue-summary">
@@ -331,11 +552,21 @@ const UnifiedApplicationEngine = ({ selectedService, onCancel, onComplete, activ
                     <div className="success-step animated">
                         <div className="success-icon"><CheckCircle size={80} className="text-emerald-500" /></div>
                         <div className="success-actions">
-                            <button className="btn-primary" onClick={() => onComplete({
-                                refId: `RAJ-GW-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-                                serviceId: selectedService.id,
-                                title: selectedService.title
-                            })}>Back to Dashboard</button>
+                            <button className="btn-primary" onClick={() => {
+                                // Generate application number
+                                const appNo = `IND/RJ/${new Date().getFullYear()}/${Math.floor(1000 + Math.random() * 9000)}`;
+                                const nocNo = `NOC/${appNo}/N`;
+                                
+                                onComplete({
+                                    refId: appNo,
+                                    serviceId: selectedService.id,
+                                    title: selectedService.title,
+                                    formData: formData,
+                                    uploadedDocs: uploadedDocs,
+                                    applicationNumber: appNo,
+                                    nocNumber: nocNo
+                                });
+                            }}>Back to Dashboard</button>
                             <button className="btn-outline">Download Acknowledgement</button>
                         </div>
                     </div>

@@ -23,6 +23,11 @@ import MeterRegistrationSystem from './pages/Meters/MeterRegistrationSystem';
 import RigRegistration from './pages/RigRegistration';
 import NOCWorkflow from './pages/NOC/NOCWorkflow';
 import ComplianceMonitoring from './pages/Meters/ComplianceMonitoring';
+import BorewellDrillingPermission from './pages/BorewellDrillingPermission';
+import WellConversion from './pages/WellConversion';
+import EmergencyNOC from './pages/EmergencyNOC';
+import TankerTransportNOC from './pages/TankerTransportNOC';
+import ViolationRegularization from './pages/ViolationRegularization';
 import ApplicationForm from './pages/ApplicationForm';
 import AccountSettings from './pages/AccountSettings';
 import GenericPage from './pages/GenericPage';
@@ -39,6 +44,8 @@ import Utility from './pages/Utility';
 import Login from './pages/Login';
 import Logout from './pages/Logout';
 import GroundwaterCharges from './pages/Billing/GroundwaterCharges';
+import Chatbot from './pages/Chatbot/Chatbot';
+import ChatbotPage from './pages/Chatbot/ChatbotPage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -135,6 +142,11 @@ function App() {
             <Route path="/meter-registration-system" element={<MeterRegistrationSystem activeCompany={activeCompany} setActiveCompany={setActiveCompany} userRole={userRole} setUserRole={setUserRole} userCompanies={userCompanies} setUserCompanies={setUserCompanies} />} />
             <Route path="/noc-portal" element={<NOCWorkflow activeCompany={activeCompany} setActiveCompany={setActiveCompany} userRole={userRole} setUserRole={setUserRole} userCompanies={userCompanies} setUserCompanies={setUserCompanies} />} />
             <Route path="/rig-registration" element={<RigRegistration activeCompany={activeCompany} setActiveCompany={setActiveCompany} userRole={userRole} setUserRole={setUserRole} userCompanies={userCompanies} setUserCompanies={setUserCompanies} />} />
+            <Route path="/borewell-drilling-permission" element={<BorewellDrillingPermission activeCompany={activeCompany} setActiveCompany={setActiveCompany} />} />
+            <Route path="/well-conversion" element={<WellConversion activeCompany={activeCompany} setActiveCompany={setActiveCompany} />} />
+            <Route path="/emergency-noc" element={<EmergencyNOC activeCompany={activeCompany} setActiveCompany={setActiveCompany} />} />
+            <Route path="/tanker-transport-noc" element={<TankerTransportNOC activeCompany={activeCompany} setActiveCompany={setActiveCompany} />} />
+            <Route path="/violation-regularization" element={<ViolationRegularization activeCompany={activeCompany} setActiveCompany={setActiveCompany} />} />
 
             <Route path="/compliance" element={<SelfCompliance />} />
             <Route path="/inspection" element={<PortalLayout userRole={userRole} setUserRole={setUserRole}><SelfInspection /></PortalLayout>} />
@@ -148,6 +160,7 @@ function App() {
             <Route path="/logout" element={<Logout onLogout={handleLogout} />} />
             <Route path="/issues" element={<PortalLayout userRole={userRole} setUserRole={setUserRole}><GenericPage title="Issue Reporting" /></PortalLayout>} />
             <Route path="/help" element={<PortalLayout userRole={userRole} setUserRole={setUserRole}><GenericPage title="Help" /></PortalLayout>} />
+            <Route path="/chatbot" element={<PortalLayout userRole={userRole} setUserRole={setUserRole}><ChatbotPage /></PortalLayout>} />
           </>
         ) : (
           <Route path="/portal/*" element={<Navigate to="/login" replace />} />
